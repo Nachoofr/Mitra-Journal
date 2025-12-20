@@ -1,0 +1,103 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Components.Web
+@using Mitra_Journal.Components.Layout
+@using Mitra_Journal.Services
+@layout MainLayout
+@inject NavigationManager Navigation
+@inject ThemeService ThemeService
+<style>
+    /* Light and dark mode for sidebar and main content */
+</style>
+
+<div class="d-flex vh-100 @(currentModeClass)">
+    <!-- Sidebar -->
+  
+
+    <!-- Main Content -->
+    <div class="flex-fill p-4 overflow-auto @(isDarkMode ? "dark-mode" : "light-mode")">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="mb-4">
+                <h2 class="fw-bold mb-2">All Entries</h2>
+                <p class="text-secondary mb-1">Browse through all your journal entries</p>
+                <small class="text-muted">Total Entries: 0 | Page 1 of 1</small>
+            </div>
+
+            <!-- Search & Filter Section -->
+            <div class="card shadow-sm mb-4 @(isDarkMode ? "dark-mode" : "")">
+                <div class="card-body p-4">
+                    <h6 class="fw-semibold mb-3">
+                        <i class="bi bi-funnel me-2"></i>
+                        Search & Filter
+                    </h6>
+
+                    <!-- Search Input -->
+                    <div class="mb-3">
+                        <input type="text" 
+                               class="form-control @(isDarkMode ? "bg-dark text-light border-secondary" : "")" 
+                               placeholder="Search by content..." 
+                               @bind="searchText" />
+                    </div>
+
+                    <!-- Date Filters -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-medium">Start Date</label>
+                            <input type="date" class="form-control @(isDarkMode ? "bg-dark text-light border-secondary" : "")" @bind="startDate" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-medium">End Date</label>
+                            <input type="date" class="form-control @(isDarkMode ? "bg-dark text-light border-secondary" : "")" @bind="endDate" />
+                        </div>
+                    </div>
+
+                    <!-- Advanced Filters Button -->
+                    <button class="btn btn-link text-primary text-decoration-none p-0 small fw-medium" 
+                            @onclick="ToggleAdvancedFilters">
+                        Show Advanced Filters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-calendar-x text-muted" style="font-size: 4rem; opacity: 0.5;"></i>
+                </div>
+                <h4 class="fw-semibold mb-2">No Entries Yet</h4>
+                <p class="text-secondary mb-4">Start your journaling journey by creating your first entry</p>
+                <button class="btn btn-primary px-4" @onclick="CreateEntry">
+                    <i class="bi bi-plus-lg me-2"></i>Create Entry
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isDarkMode => ThemeService.IsDarkMode; // <-- bind directly to service
+
+    protected override void OnInitialized()
+    {
+        ThemeService.OnChange += StateHasChanged; // <-- subscribe to theme changes
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnChange -= StateHasChanged; // <-- unsubscribe
+    }
+
+    private string currentModeClass => isDarkMode ? "dark-mode" : "light-mode";
+
+    // Your other code
+    private string searchText = "";
+    private DateTime? startDate;
+    private DateTime? endDate;
+    private bool showAdvancedFilters = false;
+
+    private void ToggleAdvancedFilters() => showAdvancedFilters = !showAdvancedFilters;
+
+    private void CreateEntry() => Navigation.NavigateTo("/homepage");
+
+    private void GoToHome() => Navigation.NavigateTo("/weather");
+}
