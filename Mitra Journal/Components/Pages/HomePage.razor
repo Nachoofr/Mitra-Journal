@@ -1,7 +1,11 @@
 @page "/home"
 @using Microsoft.AspNetCore.Components.Web
 @using Mitra_Journal.Components.Layout
+@using Mitra_Journal.Entities
 @using Mitra_Journal.Services
+@using Mitra_Journal.Services.Interface
+@inject IJournalService _journalService
+@inject NavigationManager nav
 @inject ThemeService ThemeService
 @implements IDisposable
 @layout MainLayout
@@ -234,6 +238,7 @@
     private string entryPassword = "";
     private List<string> selectedTags = new List<string>();
 
+    
     private List<string> positiveMoods = new() { "Happy", "Excited", "Relaxed", "Grateful", "Confident" };
     private List<string> neutralMoods = new() { "Calm", "Thoughtful", "Curious", "Nostalgic", "Bored" };
     private List<string> negativeMoods = new() { "Sad", "Angry", "Stressed", "Lonely", "Anxious" };
@@ -285,10 +290,28 @@
         // Show all tags modal or expand
     }
 
-    private void SaveEntry()
+    private async Task SaveEntry()
     {
-        // Save logic
-        Console.WriteLine("Entry saved!");
+        
+        if (string.IsNullOrEmpty(entryTitle))
+        {
+            Console.WriteLine("Title should not be null");
+            throw new InvalidDataException();
+        }
+        
+
+        Journal journal = new Journal()
+        {
+            JournalId = Guid.NewGuid(),
+            Title = entryTitle,
+            Description = entryContent,
+            TagId= Guid.Parse("4FA85F64-5717-4562-B3FC-2C963F66AF20"),
+            MoodId = Guid.Parse("3FA85F64-5717-4562-B3FC-2C963F66AF10"),
+            CreatedAt = DateTime.Now
+        };
+        await _journalService.AddJournalAsync(journal);
+        nav.NavigateTo("/");
+       
     }
 
     private void LockEntry()

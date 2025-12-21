@@ -25,8 +25,4 @@ public class Journal
     [ForeignKey("TagId")]
     
     public Tags Tags { get; set; }
-    
-    
-    
-    
 }

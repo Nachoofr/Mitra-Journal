@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Mitra_Journal;
 using Mitra_Journal.Data;
+using Mitra_Journal.Entities;
 using Mitra_Journal.Services;
 using Mitra_Journal.Services.Interface;
 using MudBlazor.Services;
@@ -28,7 +29,7 @@ public static class MauiProgram
         builder.Logging.AddDebug();
         builder.Services.AddScoped<IJournalService, JournalService>();
 #endif
-        
+        // Add this method to your MauiProgram.cs or create a separate seeder class
         var dbPath = Path.Combine(FileSystem.AppDataDirectory, "Mitra.db3");
         Console.WriteLine("DB path: " + dbPath);
         builder.Services.AddDbContext<LocalDbContext>(options =>
