@@ -9,12 +9,13 @@
 @inject ThemeService ThemeService
 @implements IDisposable
 @layout MainLayout
+@inject IJSRuntime JS
 
 <div class="d-flex vh-100 w-100 @(currentModeClass)">
-    <!-- Main Content -->
+
     <div class="flex-fill p-4 overflow-auto @(ThemeService.IsDarkMode ? "dark-mode" : "light-mode")">
         <div class="container-fluid" >
-            <!-- Header -->
+
             <div class="d-flex justify-content-between align-items-start mb-4">
                 <div class="d-flex align-items-center gap-3">
                     <div class="bg-primary rounded-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
@@ -40,11 +41,11 @@
                 </div>
             </div>
 
-            <!-- Journal Card -->
+
             <div class="card shadow-sm @(ThemeService.IsDarkMode ? "bg-dark border-secondary" : "")">
                 <div class="card-body p-4">
 
-                    <!-- Date & Time -->
+         
                     <div class="d-flex align-items-center gap-2 text-muted mb-4">
                         <i class="bi bi-calendar3"></i>
                         <span>@DateTime.Now.ToString("dddd, MMMM dd, yyyy")</span>
@@ -54,13 +55,13 @@
                         <input type="time" class="form-control @(ThemeService.IsDarkMode ? "bg-transparent text-light" : "")" />
                     </div>
 
-                    <!-- Mood Selector -->
+          
                     <div class="mb-4">
                         <label class="form-label fw-semibold mb-3">
                             How are you feeling today? <span class="text-danger">*</span>
                         </label>
 
-                        @* Positive Moods *@
+
                         <div class="mb-3">
                             <div class="d-flex align-items-center gap-2 mb-2">
                                 <div class="rounded-circle bg-success d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
@@ -79,7 +80,7 @@
                             </div>
                         </div>
 
-                        @* Neutral Moods *@
+
                         <div class="mb-3">
                             <div class="d-flex align-items-center gap-2 mb-2">
                                 <div class="rounded-circle bg-info d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
@@ -98,7 +99,7 @@
                             </div>
                         </div>
 
-                        @* Negative Moods *@
+
                         <div class="mb-3">
                             <div class="d-flex align-items-center gap-2 mb-2">
                                 <div class="rounded-circle bg-danger d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
@@ -122,7 +123,7 @@
                         </small>
                     </div>
 
-                    <!-- Title -->
+                    
                     <div class="mb-4">
                         <input type="text"
                                class="form-control form-control-lg border-0 px-0 @(ThemeService.IsDarkMode ? "bg-transparent text-light" : "")"
@@ -130,18 +131,13 @@
                                @bind="entryTitle" />
                     </div>
 
-                    <!-- Journal Entry -->
-                    <div class="mb-4">
-                        <textarea class="form-control @(ThemeService.IsDarkMode ? "bg-dark text-light border-secondary" : "")"
-                                  rows="10"
-                                  placeholder="Start writing..."
-                                  @bind="entryContent"></textarea>
-                        <small class="d-block mt-2 @(ThemeService.IsDarkMode ? "text-secondary" : "text-muted")">
-                            Markdown supported: # Headers, **bold**, *italic*, [link](url), * lists
-                        </small>
+
+                    <div id="editor"
+                         class="mb-4 min-h-[400px] form-control
+                            @(ThemeService.IsDarkMode ? "bg-dark text-light border-secondary" : "")">
                     </div>
 
-                    <!-- Tags -->
+
                     <div class="mb-4">
                         <label class="form-label fw-medium">
                             <i class="bi bi-tag me-1"></i> Tags (Optional)
@@ -188,14 +184,14 @@
                         </div>
                     </div>
 
-                    <!-- Save Button -->
+
                     <div class="d-flex justify-content-end mb-4">
                         <button class="btn btn-primary px-4" @onclick="SaveEntry">
                             <i class="bi bi-save me-2"></i> Save Entry
                         </button>
                     </div>
 
-                    <!-- Lock Entry Section -->
+                    
                     <div class="border-top pt-4">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
@@ -230,6 +226,7 @@
 </div>
 
 @code {
+    private string HtmlContent = "";
     private string entryTitle = "";
     private string entryContent = "";
     private TimeSpan? entryTime = TimeSpan.FromHours(DateTime.Now.Hour);
@@ -255,6 +252,19 @@
     protected override void OnInitialized()
     {
         ThemeService.OnChange += StateHasChanged;
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("initQuill", "editor");
+ 
+            if (string.IsNullOrEmpty(entryContent))
+            {
+                await JS.InvokeVoidAsync("setQuillHtml", entryContent);
+            }
+        }
     }
 
     public void Dispose()
@@ -287,11 +297,10 @@
 
     private void ShowAllTags()
     {
-        // Show all tags modal or expand
     }
 
-    private async Task SaveEntry()
-    {
+    private async Task SaveEntry(){
+        
         
         if (string.IsNullOrEmpty(entryTitle))
         {
@@ -299,7 +308,7 @@
             throw new InvalidDataException();
         }
         
-
+        entryContent = await JS.InvokeAsync<string>("getQuillHtml");
         Journal journal = new Journal()
         {
             JournalId = Guid.NewGuid(),
@@ -316,6 +325,7 @@
 
     private void LockEntry()
     {
-        // Lock entry logic
     }
+    }
+
 }
