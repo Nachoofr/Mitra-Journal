@@ -4,45 +4,75 @@
 @inject ThemeService ThemeService
 @implements IDisposable
 
-<nav class="nav flex-column gap-1">
-    <!-- Home -->
-    <NavLink class="nav-link d-flex align-items-center gap-2 px-3 py-2 rounded"
-             href="/home"
-             Match="NavLinkMatch.Prefix"
-             ActiveClass="@(ThemeService.IsDarkMode ? "text-light bg-opacity-10 bg-primary fw-medium" : "text-primary bg-primary bg-opacity-10 fw-medium")"
-             InactiveClass="@(ThemeService.IsDarkMode ? "text-light" : "text-secondary")">
-        <i class="bi bi-house-door"></i>
-        <span>Home</span>
-    </NavLink>
+<style>
+    nav a {
+        text-decoration: none !important;
+    }
     
+    nav a:hover {
+        text-decoration: none !important;
+    }
+</style>
+
+<nav class="flex flex-col gap-1 w-full p-2">
+    <!-- Home -->
+    <NavLink
+        href="/home"
+        Match="NavLinkMatch.Prefix"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 no-underline"
+        ActiveClass="@(ThemeService.IsDarkMode 
+            ? "text-indigo-400 bg-indigo-500/10 font-medium" 
+            : "text-indigo-600 bg-indigo-50 font-medium")"
+        InactiveClass="@(ThemeService.IsDarkMode 
+            ? "text-gray-400 hover:bg-white/5 hover:text-gray-300" 
+            : "text-gray-700 hover:bg-gray-50")">
+        <i class="bi bi-house-door text-xl"></i>
+        <span class="text-base">Home</span>
+    </NavLink>
+
     <!-- All Entries -->
-    <NavLink class="nav-link d-flex align-items-center gap-2 px-3 py-2 rounded"
-             href="/"
-             Match="NavLinkMatch.All"
-             ActiveClass="@(ThemeService.IsDarkMode ? "text-light bg-opacity-10 bg-primary fw-medium" : "text-primary bg-primary bg-opacity-10 fw-medium")"
-             InactiveClass="@(ThemeService.IsDarkMode ? "text-light" : "text-secondary")">
-        <i class="bi bi-list-ul"></i>
-        <span>All Entries</span>
+    <NavLink
+        href="/"
+        Match="NavLinkMatch.All"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 no-underline"
+        ActiveClass="@(ThemeService.IsDarkMode 
+            ? "text-indigo-400 bg-indigo-500/10 font-medium" 
+            : "text-indigo-600 bg-indigo-50 font-medium")"
+        InactiveClass="@(ThemeService.IsDarkMode 
+            ? "text-gray-400 hover:bg-white/5 hover:text-gray-300" 
+            : "text-gray-700 hover:bg-gray-50")">
+        <i class="bi bi-list-ul text-xl"></i>
+        <span class="text-base">All Entries</span>
     </NavLink>
 
     <!-- Dashboard -->
-    <NavLink class="nav-link d-flex align-items-center gap-2 px-3 py-2 rounded"
-             href="/dashboard"
-             Match="NavLinkMatch.Prefix"
-             ActiveClass="@(ThemeService.IsDarkMode ? "text-light bg-opacity-10 bg-primary fw-medium" : "text-primary bg-primary bg-opacity-10 fw-medium")"
-             InactiveClass="@(ThemeService.IsDarkMode ? "text-light" : "text-secondary")">
-        <i class="bi bi-bar-chart"></i>
-        <span>Dashboard</span>
+    <NavLink
+        href="/dashboard"
+        Match="NavLinkMatch.Prefix"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 no-underline"
+        ActiveClass="@(ThemeService.IsDarkMode 
+            ? "text-indigo-400 bg-indigo-500/10 font-medium" 
+            : "text-indigo-600 bg-indigo-50 font-medium")"
+        InactiveClass="@(ThemeService.IsDarkMode 
+            ? "text-gray-400 hover:bg-white/5 hover:text-gray-300" 
+            : "text-gray-700 hover:bg-gray-50")">
+        <i class="bi bi-grid-3x3-gap text-xl"></i>
+        <span class="text-base">Dashboard</span>
     </NavLink>
 
     <!-- Calendar -->
-    <NavLink class="nav-link d-flex align-items-center gap-2 px-3 py-2 rounded"
-             href="/calendar"
-             Match="NavLinkMatch.Prefix"
-             ActiveClass="@(ThemeService.IsDarkMode ? "text-light bg-opacity-10 bg-primary fw-medium" : "text-primary bg-primary bg-opacity-10 fw-medium")"
-             InactiveClass="@(ThemeService.IsDarkMode ? "text-light" : "text-secondary")">
-        <i class="bi bi-calendar3"></i>
-        <span>Calendar</span>
+    <NavLink
+        href="/calendar"
+        Match="NavLinkMatch.Prefix"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 no-underline"
+        ActiveClass="@(ThemeService.IsDarkMode 
+            ? "text-indigo-400 bg-indigo-500/10 font-medium" 
+            : "text-indigo-600 bg-indigo-50 font-medium")"
+        InactiveClass="@(ThemeService.IsDarkMode 
+            ? "text-gray-400 hover:bg-white/5 hover:text-gray-300" 
+            : "text-gray-700 hover:bg-gray-50")">
+        <i class="bi bi-calendar3 text-xl"></i>
+        <span class="text-base">Calendar</span>
     </NavLink>
 </nav>
 
