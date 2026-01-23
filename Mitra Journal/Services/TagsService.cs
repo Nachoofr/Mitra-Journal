@@ -17,4 +17,14 @@ public class TagsService : ITagsService
     {
         return  _dbContext.Tags.ToList();
     }
+    public Dictionary<string, int> GetTagsAnalytics()
+    {
+        return _dbContext.Journals
+            .Include(j => j.Tags)
+            .GroupBy(j => j.Tags.TagName)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Count()
+            );
+    }
 }

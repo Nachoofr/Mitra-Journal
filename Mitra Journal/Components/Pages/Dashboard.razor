@@ -1,0 +1,326 @@
+@page "/dashboard"
+@using Mitra_Journal.Entities
+@using Mitra_Journal.Services
+@using Mitra_Journal.Services.Interface
+@inject IJournalService JournalService
+@inject IMoodService MoodService
+@inject ITagsService TagsService
+@inject ThemeService ThemeService
+@inject IJSRuntime JS
+
+<div class="min-h-screen @(isDarkMode ? "bg-gray-900" : "bg-gray-50") p-6">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
+            <div class="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold @(isDarkMode ? "text-gray-100" : "text-gray-800")">Dashboard</h1>
+                <p class="@(isDarkMode ? "text-gray-400" : "text-gray-500") text-sm">Track your journaling progress and
+                    insights</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <!-- Current Streak -->
+        <div
+            class="@(isDarkMode ? "bg-orange-900/20 border-orange-800/30" : "bg-orange-50 border-orange-100") rounded-2xl p-6 border">
+            <div class="flex items-center gap-2 mb-3">
+                <svg class="w-5 h-5 @(isDarkMode ? "text-orange-400" : "text-orange-500")" fill="currentColor"
+                     viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                          d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z"
+                          clip-rule="evenodd"/>
+                </svg>
+                <span class="@(isDarkMode ? "text-orange-400" : "text-orange-600") font-medium">Current Streak</span>
+            </div>
+            <div class="text-5xl font-bold @(isDarkMode ? "text-gray-100" : "text-gray-800") mb-2">@currentStreak</div>
+            <div class="text-sm @(isDarkMode ? "text-gray-400" : "text-gray-500") mb-1">days in a</div>
+            @if (currentStreak == 0)
+            {
+                <div class="text-sm @(isDarkMode ? "text-orange-400" : "text-orange-600")">
+                    <span class="line-through">row</span>
+                    <br/>
+                    Write today to start your streak! 🚀
+                </div>
+            }
+            else
+            {
+                <span>row</span>
+            }
+
+        </div>
+
+        <!-- Longest Streak -->
+        <div
+            class="@(isDarkMode ? "bg-purple-900/20 border-purple-800/30" : "bg-purple-50 border-purple-100") rounded-2xl p-6 border">
+            <div class="flex items-center gap-2 mb-3">
+                <svg class="w-5 h-5 @(isDarkMode ? "text-purple-400" : "text-purple-500")" fill="none"
+                     stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                </svg>
+                <span class="@(isDarkMode ? "text-purple-400" : "text-purple-600") font-medium">Longest Streak</span>
+            </div>
+            <div class="text-5xl font-bold @(isDarkMode ? "text-gray-100" : "text-gray-800") mb-2">@longestStreak</div>
+            <div class="text-sm @(isDarkMode ? "text-purple-500" : "text-purple-400")">days record</div>
+        </div>
+
+        <!-- Total Entries -->
+        <div
+            class="@(isDarkMode ? "bg-green-900/20 border-green-800/30" : "bg-green-50 border-green-100") rounded-2xl p-6 border">
+            <div class="flex items-center gap-2 mb-3">
+                <svg class="w-5 h-5 @(isDarkMode ? "text-green-400" : "text-green-500")" fill="none"
+                     stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+                <span class="@(isDarkMode ? "text-green-400" : "text-green-600") font-medium">Total Entries</span>
+            </div>
+            <div class="text-5xl font-bold @(isDarkMode ? "text-gray-100" : "text-gray-800") mb-2">@totalEntries</div>
+            <div class="text-sm @(isDarkMode ? "text-green-500" : "text-green-400")">entries<br/>written</div>
+        </div>
+    </div>
+
+    <!-- Mood Analytics -->
+    <div class="mb-8">
+        <div class="flex items-center gap-2 mb-4">
+            <svg class="w-6 h-6 @(isDarkMode ? "text-gray-300" : "text-gray-700")" fill="none" stroke="currentColor"
+                 viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <h2 class="text-xl font-bold @(isDarkMode ? "text-gray-100" : "text-gray-800")">Mood Analytics</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Mood Distribution -->
+            <div class="@(isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200") rounded-2xl p-6 border mt-6">
+                <h3 class="font-semibold @(isDarkMode ? "text-gray-200" : "text-gray-700") mb-4">
+                    Mood Distribution
+                </h3>
+
+                <div style="height:500px">
+                    <canvas id="moodPieChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Top 5 Moods -->
+            <div class="@(isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200") rounded-2xl p-6 border">
+                <h3 class="font-semibold @(isDarkMode ? "text-gray-200" : "text-gray-700") mb-4">
+                    Top 5 Moods
+                </h3>
+                <div style="height:500px">
+                    <canvas id="moodChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tag Analytics -->
+    <div class="mb-8">
+        <div class="flex items-center gap-2 mb-4">
+            <svg class="w-6 h-6 @(isDarkMode ? "text-gray-300" : "text-gray-700")" fill="none" stroke="currentColor"
+                 viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+            </svg>
+            <h2 class="text-xl font-bold @(isDarkMode ? "text-gray-100" : "text-gray-800")">Tag Analytics</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Most Used Tags -->
+            <div class="@(isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200") rounded-2xl p-6 border mt-6">
+                <h3 class="font-semibold @(isDarkMode ? "text-gray-200" : "text-gray-700") mb-4">
+                    Most Used Tags
+                </h3>
+
+                <div style="height:400px">
+                    <canvas id="tagPieChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Top 5 Moods -->
+            <div class="@(isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200") rounded-2xl p-6 border">
+                <h3 class="font-semibold @(isDarkMode ? "text-gray-200" : "text-gray-700") mb-4">
+                    Tag Category Breakdown
+                </h3>
+
+                <div style="height:400px">
+                    <canvas id="tagChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Word Count Trends -->
+    <div class="mb-8">
+        <div class="flex items-center gap-2 mb-4">
+            <svg class="w-6 h-6 @(isDarkMode ? "text-gray-300" : "text-gray-700")" fill="none" stroke="currentColor"
+                 viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <h2 class="text-xl font-bold @(isDarkMode ? "text-gray-100" : "text-gray-800")">Word Count Trends</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <!-- Average Words -->
+            <div
+                class="@(isDarkMode ? "bg-blue-900/20 border-blue-800/30" : "bg-blue-50 border-blue-100") rounded-2xl p-6 border">
+                <div class="text-sm font-medium @(isDarkMode ? "text-blue-400" : "text-blue-600") mb-2">Average Words
+                </div>
+                <div
+                    class="text-4xl font-bold @(isDarkMode ? "text-gray-100" : "text-gray-800") mb-1">@averageWords</div>
+                <div class="text-sm @(isDarkMode ? "text-blue-500" : "text-blue-400")">per entry</div>
+            </div>
+
+            <!-- Highest Count -->
+            <div
+                class="@(isDarkMode ? "bg-green-900/20 border-green-800/30" : "bg-green-50 border-green-100") rounded-2xl p-6 border">
+                <div class="text-sm font-medium @(isDarkMode ? "text-green-400" : "text-green-600") mb-2">Highest
+                    Count
+                </div>
+                <div
+                    class="text-4xl font-bold @(isDarkMode ? "text-gray-100" : "text-gray-800") mb-1">@highestCount</div>
+                <div class="text-sm @(isDarkMode ? "text-green-500" : "text-green-400")">words</div>
+            </div>
+
+            <!-- Recent Trend -->
+            <div
+                class="@(isDarkMode ? "bg-purple-900/20 border-purple-800/30" : "bg-purple-50 border-purple-100") rounded-2xl p-6 border">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-4 h-4 @(isDarkMode ? "text-purple-400" : "text-purple-500")" fill="none"
+                         stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+
+                    <div class="text-sm font-medium @(isDarkMode ? "text-purple-400" : "text-purple-600")">Recent
+                        Trend
+                    </div>
+                </div>
+                <div
+                    class="text-4xl font-bold @(isDarkMode ? "text-gray-100" : "text-gray-800") mb-1">@recentTrend</div>
+                <div class="flex items-center gap-1 text-sm @(isDarkMode ? "text-purple-500" : "text-purple-400")">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                    </svg>
+                    Decreasing
+                </div>
+            </div>
+        </div>
+
+        <!-- Word Count Over Time Chart -->
+        <div class="@(isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200") rounded-2xl p-6 border">
+            <h3 class="font-semibold @(isDarkMode ? "text-gray-200" : "text-gray-700") mb-4">Word Count Over Time</h3>
+            <div class="flex items-center justify-center h-64 @(isDarkMode ? "text-gray-500" : "text-gray-400")">
+                No word count data available
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    /* ================= THEME ================= */
+    private bool isDarkMode => ThemeService.IsDarkMode;
+
+    /* ================= DATA ================= */
+    private int currentStreak = 0;
+    private int longestStreak = 0;
+    private int totalEntries = 0;
+    private int averageWords = 0;
+    private int highestCount = 0;
+    private int recentTrend = 0;
+    private Dictionary<string, int> moodAnalytics = new();
+    private Dictionary<string, int> tagAnalytics = new();
+    private bool chartsRendered = false;
+
+    private async Task GetStreaks()
+    {
+        var streak = await JournalService.GetStreaksAsync();
+        totalEntries = streak.TotalJournals;
+        currentStreak = streak.CurrentStreak;
+        longestStreak = streak.LongestStreak;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ThemeService.OnChange += StateHasChanged;
+        await GetStreaks();
+        GetMoodAnalytics();
+        GetTagsAnalytics();
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!moodAnalytics.Any() || !tagAnalytics.Any())
+            return;
+
+        if (!chartsRendered)
+        {
+            await RenderCharts();
+            chartsRendered = true;
+        }
+    }
+
+    private async Task RenderCharts()
+    {
+        await JS.InvokeVoidAsync(
+            "renderMoodChart",
+            moodAnalytics.Keys.Take(5).ToArray(),
+            moodAnalytics.Values.Take(5).ToArray(),
+            isDarkMode
+        );
+
+        await JS.InvokeVoidAsync(
+            "renderMoodPieChart",
+            moodAnalytics.Keys.ToArray(),
+            moodAnalytics.Values.ToArray(),
+            isDarkMode
+        );
+
+        await JS.InvokeVoidAsync(
+            "renderTagPieChart",
+            tagAnalytics.Keys.ToArray(),
+            tagAnalytics.Values.ToArray(),
+            isDarkMode
+        );
+
+        await JS.InvokeVoidAsync(
+            "renderTagChart",
+            tagAnalytics.Keys.Take(5).ToArray(),
+            tagAnalytics.Values.Take(5).ToArray(),
+            isDarkMode
+        );
+    }
+    
+    public void Dispose()
+    {
+        ThemeService.OnChange -= StateHasChanged;
+    }
+
+    private void GetMoodAnalytics()
+    {
+        moodAnalytics = MoodService.GetMoodAnalytics();
+    }
+
+    private void GetTagsAnalytics()
+    {
+        tagAnalytics = TagsService.GetTagsAnalytics();
+    }
+    private async void OnThemeChanged()
+    {
+        chartsRendered = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+}

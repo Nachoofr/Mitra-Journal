@@ -5,4 +5,5 @@ namespace Mitra_Journal.Services.Interface;
 public interface ITagsService
 {
     List<Tags> GetTags();    
+    Dictionary<string, int> GetTagsAnalytics();
 }

@@ -36,7 +36,7 @@
                         <div>
                             <div class="fw-bold @(ThemeService.IsDarkMode ? "text-light" : "")">Current Streak</div>
                             <div class="small @(ThemeService.IsDarkMode ? "text-secondary" : "text-muted")">
-                                <span class="fw-bold @(ThemeService.IsDarkMode ? "text-light" : "")">0</span> days
+                                <span class="fw-bold @(ThemeService.IsDarkMode ? "text-light" : "")">@currentStreak</span> days
                             </div>
                         </div>
                     </div>
@@ -242,8 +242,7 @@
     private string moodId = "";
     private string tagId = "";
     private List<string> selectedTags = new List<string>();
-
-    
+    private int currentStreak = 0;
     private List<Mood> positiveMoods = new List<Mood>();
     private List<Mood> neutralMoods = new List<Mood>();
     private List<Mood> negativeMoods = new List<Mood>();
@@ -253,14 +252,20 @@
     private bool isDarkMode => ThemeService.IsDarkMode;
     private string currentModeClass => isDarkMode ? "dark-mode" : "light-mode";
 
-    protected override void OnInitialized()
+    protected async override void OnInitialized()
     {
         ThemeService.OnChange += StateHasChanged;
         LoadTags();
         LoadMoods();
+        await GetStreaks();
     }
     
-    
+    private async Task GetStreaks()
+    {
+        var streak = await _journalService.GetStreaksAsync();
+        currentStreak = streak.CurrentStreak;
+       
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)

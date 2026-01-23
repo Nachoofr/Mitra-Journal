@@ -15,12 +15,17 @@ public class JournalService : IJournalService
     }
  
     // Get all journals including related Mood and Tags
-    public async Task<List<Journal>> GetAllJournalsAsync()
+    public async Task<(int,List<Journal>)> GetAllJournalsAsync(int pageNo = 1, int pageSize = 3)
     {
-        return await dbConfig.Journals
+        var totalJournalCount = await dbConfig.Journals.CountAsync();
+        var paginatedJournals = await dbConfig.Journals
             .Include(j => j.Mood)
             .Include(j => j.Tags)
+            .OrderByDescending(j => j.CreatedAt)
+            .Skip((pageNo - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+        return (totalJournalCount, paginatedJournals);
     }
  
     // Get a single journal by ID including related Mood and Tags
@@ -67,5 +72,59 @@ public class JournalService : IJournalService
             dbConfig.Journals.Remove(journal);
             await dbConfig.SaveChangesAsync();
         }
+    }
+    public async Task<StreakResult> GetStreaksAsync()
+    {
+        var totalEntries =  dbConfig.Journals.Count();
+        // Get all journal dates (distinct) in ascending order
+        var entries = await dbConfig.Journals
+            .Select(e => e.CreatedAt.Date)
+            .Distinct()
+            .OrderBy(d => d)
+            .ToListAsync();
+
+        if (!entries.Any())
+            return new StreakResult { CurrentStreak = 0, LongestStreak = 0 };
+        
+        int currentStreak = 0;
+        var today = DateTime.Today.Date;
+        var checkDate = today;
+        
+        var entrySet = entries.ToHashSet();
+
+        while (entrySet.Contains(checkDate))
+        {
+            currentStreak++;
+            checkDate = checkDate.AddDays(-1);
+        }
+        
+        int longestStreak = 0;
+        int tempStreak = 1;
+
+        for (int i = 1; i < entries.Count; i++)
+        {
+          
+            if ((entries[i] - entries[i - 1]).Days == 1)
+            {
+                tempStreak++;
+            }
+            else
+            {
+                tempStreak = 1;
+            }
+
+            if (tempStreak > longestStreak)
+                longestStreak = tempStreak;
+        }
+
+        if (longestStreak == 0)
+            longestStreak = 1;
+
+        return new StreakResult
+        {
+            TotalJournals =  totalEntries,
+            CurrentStreak = currentStreak,
+            LongestStreak = longestStreak
+        };
     }
 }
