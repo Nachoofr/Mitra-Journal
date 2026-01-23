@@ -8,7 +8,7 @@
     nav a {
         text-decoration: none !important;
     }
-    
+
     nav a:hover {
         text-decoration: none !important;
     }
@@ -20,12 +20,12 @@
         href="/home"
         Match="NavLinkMatch.Prefix"
         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 no-underline"
-        ActiveClass="@(ThemeService.IsDarkMode 
-            ? "text-indigo-400 bg-indigo-500/10 font-medium" 
-            : "text-indigo-600 bg-indigo-50 font-medium")"
-        InactiveClass="@(ThemeService.IsDarkMode 
-            ? "text-gray-400 hover:bg-white/5 hover:text-gray-300" 
-            : "text-gray-700 hover:bg-gray-50")">
+        ActiveClass="@(ThemeService.IsDarkMode
+        ? "text-indigo-400 bg-indigo-500/10 font-medium"
+        : "text-indigo-600 bg-indigo-50 font-medium")"
+        InactiveClass="@(ThemeService.IsDarkMode
+        ? "text-gray-400 hover:bg-white/5 hover:text-gray-300"
+        : "text-gray-700 hover:bg-gray-50")">
         <i class="bi bi-house-door text-xl"></i>
         <span class="text-base">Home</span>
     </NavLink>
@@ -35,12 +35,12 @@
         href="/"
         Match="NavLinkMatch.All"
         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 no-underline"
-        ActiveClass="@(ThemeService.IsDarkMode 
-            ? "text-indigo-400 bg-indigo-500/10 font-medium" 
-            : "text-indigo-600 bg-indigo-50 font-medium")"
-        InactiveClass="@(ThemeService.IsDarkMode 
-            ? "text-gray-400 hover:bg-white/5 hover:text-gray-300" 
-            : "text-gray-700 hover:bg-gray-50")">
+        ActiveClass="@(ThemeService.IsDarkMode
+        ? "text-indigo-400 bg-indigo-500/10 font-medium"
+        : "text-indigo-600 bg-indigo-50 font-medium")"
+        InactiveClass="@(ThemeService.IsDarkMode
+        ? "text-gray-400 hover:bg-white/5 hover:text-gray-300"
+        : "text-gray-700 hover:bg-gray-50")">
         <i class="bi bi-list-ul text-xl"></i>
         <span class="text-base">All Entries</span>
     </NavLink>
@@ -50,12 +50,12 @@
         href="/dashboard"
         Match="NavLinkMatch.Prefix"
         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 no-underline"
-        ActiveClass="@(ThemeService.IsDarkMode 
-            ? "text-indigo-400 bg-indigo-500/10 font-medium" 
-            : "text-indigo-600 bg-indigo-50 font-medium")"
-        InactiveClass="@(ThemeService.IsDarkMode 
-            ? "text-gray-400 hover:bg-white/5 hover:text-gray-300" 
-            : "text-gray-700 hover:bg-gray-50")">
+        ActiveClass="@(ThemeService.IsDarkMode
+        ? "text-indigo-400 bg-indigo-500/10 font-medium"
+        : "text-indigo-600 bg-indigo-50 font-medium")"
+        InactiveClass="@(ThemeService.IsDarkMode
+        ? "text-gray-400 hover:bg-white/5 hover:text-gray-300"
+        : "text-gray-700 hover:bg-gray-50")">
         <i class="bi bi-grid-3x3-gap text-xl"></i>
         <span class="text-base">Dashboard</span>
     </NavLink>
@@ -65,28 +65,43 @@
         href="/calendar"
         Match="NavLinkMatch.Prefix"
         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 no-underline"
-        ActiveClass="@(ThemeService.IsDarkMode 
-            ? "text-indigo-400 bg-indigo-500/10 font-medium" 
-            : "text-indigo-600 bg-indigo-50 font-medium")"
-        InactiveClass="@(ThemeService.IsDarkMode 
-            ? "text-gray-400 hover:bg-white/5 hover:text-gray-300" 
-            : "text-gray-700 hover:bg-gray-50")">
+        ActiveClass="@(ThemeService.IsDarkMode
+        ? "text-indigo-400 bg-indigo-500/10 font-medium"
+        : "text-indigo-600 bg-indigo-50 font-medium")"
+        InactiveClass="@(ThemeService.IsDarkMode
+        ? "text-gray-400 hover:bg-white/5 hover:text-gray-300"
+        : "text-gray-700 hover:bg-gray-50")">
         <i class="bi bi-calendar3 text-xl"></i>
         <span class="text-base">Calendar</span>
+    </NavLink>
+
+    <!-- Export PDF -->
+    <NavLink
+        href="/export"
+        Match="NavLinkMatch.Prefix"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 no-underline"
+        ActiveClass="@(ThemeService.IsDarkMode
+        ? "text-indigo-400 bg-indigo-500/10 font-medium"
+        : "text-indigo-600 bg-indigo-50 font-medium")"
+        InactiveClass="@(ThemeService.IsDarkMode
+        ? "text-gray-400 hover:bg-white/5 hover:text-gray-300"
+        : "text-gray-700 hover:bg-gray-50")">
+        <i class="bi bi-file-earmark-pdf text-xl"></i>
+        <span class="text-base">Export PDF</span>
     </NavLink>
 </nav>
 
 @code {
-    [Parameter]
-    public bool IsDarkMode { get; set; }
-    
-    protected override void OnInitialized()
-    {
-        ThemeService.OnChange += StateHasChanged;
-    }
+[Parameter]
+public bool IsDarkMode { get; set; }
 
-    public void Dispose()
-    {
-        ThemeService.OnChange -= StateHasChanged;
-    }
+protected override void OnInitialized()
+{
+ThemeService.OnChange += StateHasChanged;
+}
+
+public void Dispose()
+{
+ThemeService.OnChange -= StateHasChanged;
+}
 }

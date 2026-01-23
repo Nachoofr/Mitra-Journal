@@ -30,6 +30,7 @@ public static class MauiProgram
         builder.Services.AddScoped<IJournalService, JournalService>();
         builder.Services.AddScoped<IMoodService, MoodService>();
         builder.Services.AddScoped<ITagsService, TagsService>();
+        builder.Services.AddSingleton<IJournalPdfService, JournalPdfService>();
 #endif
         var dbPath = Path.Combine(FileSystem.AppDataDirectory, "Mitra.db3");
         Console.WriteLine("DB path: " + dbPath);
@@ -45,6 +46,7 @@ public static class MauiProgram
         {
             Console.WriteLine($"Unobserved task exception: {e.Exception}");
         };
+        
 
         return builder.Build();
     }
