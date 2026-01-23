@@ -18,7 +18,7 @@
             <div class="mb-4">
                 <h2 class="fw-bold @(isDarkMode ? "text-light" : "")">All Entries</h2>
                 <small class="text-muted">
-                    Total Entries: @filteredJournals.Count
+                    Total Entries: @totalCount | Page @currentPage of @totalPages
                 </small>
             </div>
 
@@ -76,7 +76,15 @@
             </div>
 
             <!-- Journal Cards -->
-            @if (filteredJournals.Count == 0)
+            @if (isLoading)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            }
+            else if (filteredJournals.Count == 0)
             {
                 <div class="text-center py-5">
                     <i class="bi bi-journal-x text-muted" style="font-size: 4rem;"></i>
@@ -86,63 +94,124 @@
             else
             {
                 @foreach (var journal in filteredJournals)
-{
-    <button  @onclick="() => OpenEntry(journal.JournalId)" 
-            class="@(isDarkMode ? "bg-gray-800 border-gray-700 hover:bg-gray-750" : "bg-white border-gray-200 hover:bg-gray-50") rounded-3 mb-4 border shadow-sm p-6 hover:shadow-md transition-all duration-200 w-full text-left">
-        
-        <!-- Date and Time Header -->
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                <i class="bi bi-calendar3 text-indigo-600 dark:text-indigo-400 text-xl"></i>
-                <span class="font-medium text-lg">
-                    @journal.CreatedAt.ToString("dddd, MMMM dd, yyyy")
-                </span>
-            </div>
-            <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                <i class="bi bi-clock text-lg"></i>
-                <span class="text-sm">
-                    @journal.CreatedAt.ToString("hh:mm tt")
-                </span>
-            </div>
-        </div>
+                {
+                    <button @onclick="() => OpenEntry(journal.JournalId)"
+                            class="@(isDarkMode ? "bg-gray-800 border-gray-700 hover:bg-gray-750" : "bg-white border-gray-200 hover:bg-gray-50") rounded-3 mb-4 border shadow-sm p-6 hover:shadow-md transition-all duration-200 w-full text-left">
 
-        <!-- Title -->
-        <h5 class="text-xl font-semibold mb-3 @(isDarkMode ? "text-white" : "text-gray-900")">
-            @journal.Title
-        </h5>
+                        <!-- Date and Time Header -->
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                                <i class="bi bi-calendar3 text-indigo-600 dark:text-indigo-400 text-xl"></i>
+                                <span class="font-medium text-lg">
+                                    @journal.CreatedAt.ToString("dddd, MMMM dd, yyyy")
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                                <i class="bi bi-clock text-lg"></i>
+                                <span class="text-sm">
+                                    @journal.CreatedAt.ToString("hh:mm tt")
+                                </span>
+                            </div>
+                        </div>
 
-        <!-- Description -->
-        <p class="@(isDarkMode ? "text-gray-300" : "text-gray-700") mb-4 leading-relaxed">
-            @((MarkupString)(
-                journal.Description.Length > 120
-                    ? journal.Description[..120] + "..."
-                    : journal.Description))
-        </p>
+                        <!-- Title -->
+                        <h5 class="text-xl font-semibold mb-3 @(isDarkMode ? "text-white" : "text-gray-900")">
+                            @journal.Title
+                        </h5>
 
-        <!-- Mood and Tags -->
-        <div class="flex items-center gap-3 mt-auto">
-            <!-- Mood Icon -->
-            <div class="flex items-center gap-2">
-                <i class="bi bi-emoji-smile text-gray-400 text-lg"></i>
-            </div>
-            
-            <!-- Mood Badge -->
-            <span class="@(isDarkMode ? "bg-indigo-500/20 text-indigo-300" : "bg-indigo-100 text-indigo-700") px-4 py-1.5 rounded-full text-sm font-medium">
-                @journal.Mood.MoodName
-            </span>
+                        <!-- Description -->
+                        <p class="@(isDarkMode ? "text-gray-300" : "text-gray-700") mb-4 leading-relaxed">
+                            @((MarkupString)(
+                                journal.Description.Length > 120
+                                    ? journal.Description[..120] + "..."
+                                    : journal.Description))
+                        </p>
 
-            <!-- Tag Icon -->
-            <div class="flex items-center gap-2">
-                <i class="bi bi-tag text-gray-400 text-lg"></i>
-            </div>
+                        <!-- Mood and Tags -->
+                        <div class="flex items-center gap-3 mt-auto">
+                            <!-- Mood Icon -->
+                            <div class="flex items-center gap-2">
+                                <i class="bi bi-emoji-smile text-gray-400 text-lg"></i>
+                            </div>
 
-            <!-- Tag Badge -->
-            <span class="@(isDarkMode ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/30" : "bg-white text-indigo-600 border border-indigo-200") px-4 py-1.5 rounded-full text-sm font-medium">
-                @journal.Tags.TagName
-            </span>
-        </div>
-    </button>
-}
+                            <!-- Mood Badge -->
+                            <span class="@(isDarkMode ? "bg-indigo-500/20 text-indigo-300" : "bg-indigo-100 text-indigo-700") px-4 py-1.5 rounded-full text-sm font-medium">
+                                @journal.Mood.MoodName
+                            </span>
+
+                            <!-- Tag Icon -->
+                            <div class="flex items-center gap-2">
+                                <i class="bi bi-tag text-gray-400 text-lg"></i>
+                            </div>
+
+                            <!-- Tag Badge -->
+                            <span class="@(isDarkMode ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/30" : "bg-white text-indigo-600 border border-indigo-200") px-4 py-1.5 rounded-full text-sm font-medium">
+                                @journal.Tags.TagName
+                            </span>
+                        </div>
+                    </button>
+                }
+            }
+
+            <!-- Pagination Controls -->
+            @if (totalPages >= 1 && !isLoading)
+            {
+                <div class="card shadow-sm mt-4 @(isDarkMode ? "bg-dark border-secondary" : "")">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            
+                            <!-- Previous Button -->
+                            <button class="btn @(isDarkMode ? "btn-outline-light" : "btn-outline-primary") btn-sm"
+                                    @onclick="PreviousPage"
+                                    disabled="@(currentPage == 1)">
+                                <i class="bi bi-chevron-left"></i> Previous
+                            </button>
+
+                            <!-- Page Numbers -->
+                            <div class="d-flex gap-2 align-items-center">
+                                @foreach (var pageNum in GetPageNumbers())
+                                {
+                                    @if (pageNum == -1)
+                                    {
+                                        <span class="px-2 @(isDarkMode ? "text-light" : "text-dark")">...</span>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-sm @(pageNum == currentPage 
+                                            ? (isDarkMode ? "btn-primary" : "btn-primary") 
+                                            : (isDarkMode ? "btn-outline-light" : "btn-outline-secondary"))"
+                                                @onclick="() => GoToPage(pageNum)">
+                                            @pageNum
+                                        </button>
+                                    }
+                                }
+                            </div>
+
+                            <!-- Next Button -->
+                            <button class="btn @(isDarkMode ? "btn-outline-light" : "btn-outline-primary") btn-sm"
+                                    @onclick="NextPage"
+                                    disabled="@(currentPage == totalPages)">
+                                Next <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+
+                        <!-- Page Size Selector -->
+                        <div class="d-flex justify-content-center align-items-center gap-2 mt-3">
+                            <label class="form-label small mb-0 @(isDarkMode ? "text-light" : "")">
+                                Items per page:
+                            </label>
+                            <select class="form-select form-select-sm w-auto @(isDarkMode ? "bg-dark text-light border-secondary" : "")"
+                                    @onchange="OnPageSizeChanged"
+                                    value="@pageSize">
+                                <option value="3">3</option>
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                                <option value="20">20</option>
+                                <option value="30">30</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
             }
 
         </div>
@@ -159,6 +228,13 @@
     private List<Journal> journals = new();
     private List<Journal> filteredJournals = new();
 
+    /* ================= PAGINATION STATE ================= */
+    private int currentPage = 1;
+    private int pageSize = 3;
+    private int totalCount = 0;
+    private int totalPages = 0;
+    private bool isLoading = false;
+    
     /* ================= FILTER STATE ================= */
     private string searchText = "";
     private Guid? selectedMood = null;
@@ -172,13 +248,8 @@
     protected override async Task OnInitializedAsync()
     {
         ThemeService.OnChange += StateHasChanged;
-
-        journals = await JournalService.GetAllJournalsAsync();
-
-        moods = journals.Select(j => j.Mood).Distinct().ToList();
-        tags = journals.Select(j => j.Tags).Distinct().ToList();
-
-        ApplyFilters();
+        await LoadJournalsAsync();
+        await LoadFilterOptionsAsync();
     }
 
     public void Dispose()
@@ -186,14 +257,40 @@
         ThemeService.OnChange -= StateHasChanged;
     }
 
+    /* ================= DATA LOADING ================= */
+    private async Task LoadJournalsAsync()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            (totalCount,journals) = await JournalService.GetAllJournalsAsync(currentPage, pageSize);
+            ApplyFilters();
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadFilterOptionsAsync()
+    {
+        var (totalJournals,allJournals) = await JournalService.GetAllJournalsAsync(1, int.MaxValue);
+        moods = allJournals.Select(j => j.Mood).Distinct().ToList();
+        tags = allJournals.Select(j => j.Tags).Distinct().ToList();
+    }
+
     /* ================= FILTER LOGIC ================= */
     private void ApplyFilters()
     {
-        filteredJournals = journals
+        var filtered = journals
             .Where(j =>
                 // Search: Title OR Description
                 (string.IsNullOrWhiteSpace(searchText) ||
-                 j.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase) )
+                 j.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                 j.Description.Contains(searchText, StringComparison.OrdinalIgnoreCase))
 
                 // Mood
                 && (!selectedMood.HasValue || j.Mood.MoodId == selectedMood.Value)
@@ -204,14 +301,103 @@
                 // Date
                 && (!selectedDate.HasValue || j.CreatedAt.Date == selectedDate.Value.Date)
             )
-            .OrderBy(j => j.CreatedAt)
+            .OrderByDescending(j => j.CreatedAt)
             .ToList();
+
+        filteredJournals = filtered;
+        totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+        // Reset to page 1 if current page exceeds total pages
+        if (currentPage > totalPages && totalPages > 0)
+        {
+            currentPage = 1;
+        }
+    }
+
+    
+    /* ================= PAGINATION METHODS ================= */
+    private async Task GoToPage(int page)
+    {
+        if (page < 1 || page > totalPages) return;
+        
+        currentPage = page;
+        await LoadJournalsAsync();
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            await GoToPage(currentPage + 1);
+        }
+    }
+
+    private async Task PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            await GoToPage(currentPage - 1);
+        }
+    }
+
+    private async Task OnPageSizeChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var newSize))
+        {
+            pageSize = newSize;
+            currentPage = 1; // Reset to first page
+            await LoadJournalsAsync();
+        }
+    }
+
+    private List<int> GetPageNumbers()
+    {
+        var pages = new List<int>();
+        
+        if (totalPages <= 7)
+        {
+            // Show all pages if 7 or fewer
+            for (int i = 1; i <= totalPages; i++)
+            {
+                pages.Add(i);
+            }
+        }
+        else
+        {
+            // Always show first page
+            pages.Add(1);
+
+            if (currentPage > 3)
+            {
+                pages.Add(-1); // Ellipsis
+            }
+
+            // Show pages around current page
+            int start = Math.Max(2, currentPage - 1);
+            int end = Math.Min(totalPages - 1, currentPage + 1);
+
+            for (int i = start; i <= end; i++)
+            {
+                pages.Add(i);
+            }
+
+            if (currentPage < totalPages - 2)
+            {
+                pages.Add(-1); // Ellipsis
+            }
+
+            // Always show last page
+            pages.Add(totalPages);
+        }
+
+        return pages;
     }
 
     /* ================= EVENT HANDLERS ================= */
     private void OnSearchChanged(ChangeEventArgs e)
     {
         searchText = e.Value?.ToString() ?? "";
+        currentPage = 1; // Reset to first page on search
         ApplyFilters();
     }
 
@@ -221,6 +407,7 @@
             ? id
             : null;
 
+        currentPage = 1; // Reset to first page
         ApplyFilters();
     }
 
@@ -230,6 +417,7 @@
             ? id
             : null;
 
+        currentPage = 1; // Reset to first page
         ApplyFilters();
     }
 
@@ -239,6 +427,7 @@
             ? date
             : null;
 
+        currentPage = 1; // Reset to first page
         ApplyFilters();
     }
 
