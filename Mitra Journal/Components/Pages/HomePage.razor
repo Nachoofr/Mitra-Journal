@@ -6,6 +6,8 @@
 @using Mitra_Journal.Services.Interface
 @inject IJournalService _journalService
 @inject NavigationManager nav
+@inject ITagsService tagsService
+@inject IMoodService moodService
 @inject ThemeService ThemeService
 @implements IDisposable
 @layout MainLayout
@@ -72,9 +74,10 @@
                             <div class="d-flex flex-wrap gap-2">
                                 @foreach (var mood in positiveMoods)
                                 {
-                                    <button class="btn btn-outline-secondary btn-sm rounded-pill @(selectedMood == mood ? "active" : "")"
-                                            @onclick="() => SelectMood(mood)">
-                                        @mood
+                                    <input type="hidden" @bind="@mood.MoodId">
+                                    <button class="btn btn-outline-secondary btn-sm rounded-pill @(selectedMood == mood.MoodName ? "active" : "")"
+                                            @onclick="() => SelectMood(mood.MoodName)">
+                                        @mood.MoodName
                                     </button>
                                 }
                             </div>
@@ -91,9 +94,10 @@
                             <div class="d-flex flex-wrap gap-2">
                                 @foreach (var mood in neutralMoods)
                                 {
-                                    <button class="btn btn-outline-secondary btn-sm rounded-pill @(selectedMood == mood ? "active" : "")"
-                                            @onclick="() => SelectMood(mood)">
-                                        @mood
+                                    <input type="hidden" @bind="@mood.MoodId">
+                                    <button class="btn btn-outline-secondary btn-sm rounded-pill @(selectedMood == mood.MoodName ? "active" : "")"
+                                            @onclick="() => SelectMood(mood.MoodName)">
+                                        @mood.MoodName
                                     </button>
                                 }
                             </div>
@@ -110,9 +114,10 @@
                             <div class="d-flex flex-wrap gap-2">
                                 @foreach (var mood in negativeMoods)
                                 {
-                                    <button class="btn btn-outline-secondary btn-sm rounded-pill @(selectedMood == mood ? "active" : "")"
-                                            @onclick="() => SelectMood(mood)">
-                                        @mood
+                                    <input type="hidden" @bind="@mood.MoodId">
+                                    <button class="btn btn-outline-secondary btn-sm rounded-pill @(selectedMood == mood.MoodName ? "active" : "")"
+                                            @onclick="() => SelectMood(mood.MoodName)">
+                                        @mood.MoodName
                                     </button>
                                 }
                             </div>
@@ -171,9 +176,10 @@
                             <div class="d-flex flex-wrap gap-2">
                                 @foreach (var tag in presetTags)
                                 {
+                                    <input type="hidden" @bind="@tag.TagId">
                                     <button class="btn btn-outline-secondary btn-sm rounded-pill"
-                                            @onclick="() => AddPresetTag(tag)">
-                                        @tag
+                                            @onclick="() => AddPresetTag(tag.TagName)">
+                                        @tag.TagName
                                     </button>
                                 }
                             </div>
@@ -233,18 +239,16 @@
     private string selectedMood = "";
     private string newTag = "";
     private string entryPassword = "";
+    private string moodId = "";
+    private string tagId = "";
     private List<string> selectedTags = new List<string>();
 
     
-    private List<string> positiveMoods = new() { "Happy", "Excited", "Relaxed", "Grateful", "Confident" };
-    private List<string> neutralMoods = new() { "Calm", "Thoughtful", "Curious", "Nostalgic", "Bored" };
-    private List<string> negativeMoods = new() { "Sad", "Angry", "Stressed", "Lonely", "Anxious" };
+    private List<Mood> positiveMoods = new List<Mood>();
+    private List<Mood> neutralMoods = new List<Mood>();
+    private List<Mood> negativeMoods = new List<Mood>();
 
-    private List<string> presetTags = new()
-    {
-        "Work", "Career", "Studies", "Family", "Friends", "Relationships",
-        "Health", "Fitness", "Self-care", "Hobbies", "Travel", "Personal Growth"
-    };
+    private List<Tags> presetTags = new List<Tags>();
 
     private bool isDarkMode => ThemeService.IsDarkMode;
     private string currentModeClass => isDarkMode ? "dark-mode" : "light-mode";
@@ -252,7 +256,10 @@
     protected override void OnInitialized()
     {
         ThemeService.OnChange += StateHasChanged;
+        LoadTags();
+        LoadMoods();
     }
+    
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -273,6 +280,20 @@
     }
 
     private void SelectMood(string mood) => selectedMood = mood;
+
+    private void LoadTags()
+    {
+        var loadedTags = tagsService.GetTags();
+        presetTags.AddRange(loadedTags);
+    }
+
+    private void LoadMoods()
+    {
+        var loadedMoods =  moodService.GetAllMoods();
+        positiveMoods.AddRange(loadedMoods.Where(x=>x.MoodCategory == "Positive"));
+        negativeMoods.AddRange(loadedMoods.Where(x=>x.MoodCategory == "Negative"));
+        neutralMoods.AddRange(loadedMoods.Where(x=>x.MoodCategory == "Neutral"));
+    }
 
     private void AddTag()
     {
@@ -301,6 +322,23 @@
 
     private async Task SaveEntry(){
         
+        var mood = positiveMoods.Concat(neutralMoods).Concat(negativeMoods)
+            .FirstOrDefault(m => m.MoodName == selectedMood);
+
+        if (mood == null)
+        {
+            Console.WriteLine("No mood selected!");
+            return;
+        }
+        
+        Guid? tagId = null;
+        if (selectedTags.Count > 0)
+        {
+            var tag = presetTags.FirstOrDefault(t => t.TagName == selectedTags[0]);
+            if (tag != null)
+                tagId = tag.TagId;
+            
+        }
         
         if (string.IsNullOrEmpty(entryTitle))
         {
@@ -314,8 +352,8 @@
             JournalId = Guid.NewGuid(),
             Title = entryTitle,
             Description = entryContent,
-            TagId= Guid.Parse("4FA85F64-5717-4562-B3FC-2C963F66AF20"),
-            MoodId = Guid.Parse("3FA85F64-5717-4562-B3FC-2C963F66AF10"),
+            TagId= tagId.Value,
+            MoodId = mood.MoodId,
             CreatedAt = DateTime.Now
         };
         await _journalService.AddJournalAsync(journal);

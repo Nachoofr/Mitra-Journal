@@ -28,6 +28,8 @@ public static class MauiProgram
         builder.Services.AddBlazorWebViewDeveloperTools();
         builder.Logging.AddDebug();
         builder.Services.AddScoped<IJournalService, JournalService>();
+        builder.Services.AddScoped<IMoodService, MoodService>();
+        builder.Services.AddScoped<ITagsService, TagsService>();
 #endif
         // Add this method to your MauiProgram.cs or create a separate seeder class
         var dbPath = Path.Combine(FileSystem.AppDataDirectory, "Mitra.db3");

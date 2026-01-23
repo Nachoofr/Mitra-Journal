@@ -8,4 +8,7 @@ public class Mood
     public Guid MoodId { get; set; }
     
     public string MoodName { get; set; }
+
+    public string MoodCategory { get; set; }
+    
 }
