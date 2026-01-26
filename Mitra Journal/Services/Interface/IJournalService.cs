@@ -4,7 +4,8 @@ namespace Mitra_Journal.Services.Interface;
 
 public interface IJournalService
 {
-    Task<(int,List<Journal>)> GetAllJournalsAsync(int pageNo=1,int pageSize = 5);
+    Task<(int TotalCount, List<Journal> Journals)>
+        GetAllJournalsAsync(int pageNo = 1, int pageSize = 3);
 
     Task<StreakResult> GetStreaksAsync();
     Task<Journal> GetJournalByIdAsync(Guid id);

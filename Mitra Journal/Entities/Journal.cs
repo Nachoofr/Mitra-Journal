@@ -14,15 +14,20 @@ public class Journal
     
     public required DateTime CreatedAt { get; set; }
     
-    public string? Password { get; set; }
+    // public string? Password { get; set; }
     
     public Guid MoodId { get; set; }
+    public Guid SecondaryMoodId1 { get; set; }
+    public Guid SecondaryMoodId2 { get; set; }
     [ForeignKey("MoodId")]
     
     public Mood Mood{ get; set; }
     
-    public Guid TagId { get; set; }
-    [ForeignKey("TagId")]
+    public ICollection<JournalTags> JournalTags { get; set; }
     
-    public Tags Tags { get; set; }
+    
+    // public Guid TagId { get; set; }
+    // [ForeignKey("TagId")]
+    
+    // public Tags Tags { get; set; }
 }

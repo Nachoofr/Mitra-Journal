@@ -11,6 +11,8 @@ public class LocalDbContext : DbContext
     
     public DbSet<Mood> Moods { get; set; }
     
+    public DbSet<JournalTags> JournalTags { get; set; }
+    
     public LocalDbContext(DbContextOptions<LocalDbContext> options)
         : base(options) { }
 }

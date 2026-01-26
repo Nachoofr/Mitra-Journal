@@ -1,4 +1,5 @@
 @page "/home"
+@page "/home/{JournalId:guid}"
 @using Microsoft.AspNetCore.Components.Web
 @using Mitra_Journal.Components.Layout
 @using Mitra_Journal.Entities
@@ -24,9 +25,11 @@
                         <i class="bi bi-journal-text text-white fs-3"></i>
                     </div>
                     <div>
-                        <h2 class="fw-bold mb-1 @(ThemeService.IsDarkMode ? "text-light" : "")">Daily Journal</h2>
+                        <h2 class="fw-bold mb-1 @(ThemeService.IsDarkMode ? "text-light" : "")">
+                            @(IsEditMode ? "Edit Journal Entry" : "Daily Journal")
+                        </h2>
                         <p class="mb-0 @(ThemeService.IsDarkMode ? "text-secondary" : "text-muted")">
-                            Capture your thoughts, track your moods
+                            @(IsEditMode ? "Update your journal entry" : "Capture your thoughts, track your moods")
                         </p>
                     </div>
                 </div>
@@ -43,6 +46,15 @@
                 </div>
             </div>
 
+            @if (!CanEdit && IsEditMode)
+            {
+                <div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <div>
+                        You can only edit journal entries created today. This entry was created on @journalCreatedDate.ToString("MMMM dd, yyyy").
+                    </div>
+                </div>
+            }
 
             <div class="card shadow-sm @(ThemeService.IsDarkMode ? "bg-dark border-secondary" : "")">
                 <div class="card-body p-4">
@@ -50,11 +62,13 @@
          
                     <div class="d-flex align-items-center gap-2 text-muted mb-4">
                         <i class="bi bi-calendar3"></i>
-                        <span>@DateTime.Now.ToString("dddd, MMMM dd, yyyy")</span>
+                        <span>@(IsEditMode ? journalCreatedDate.ToString("dddd, MMMM dd, yyyy") : DateTime.Now.ToString("dddd, MMMM dd, yyyy"))</span>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small text-muted">Time (Optional)</label>
-                        <input type="time" class="form-control @(ThemeService.IsDarkMode ? "bg-transparent text-light" : "")" />
+                        <input type="time" 
+                               class="form-control @(ThemeService.IsDarkMode ? "bg-transparent text-light" : "")" 
+                               disabled="@(!CanEdit)" />
                     </div>
 
           
@@ -75,8 +89,17 @@
                                 @foreach (var mood in positiveMoods)
                                 {
                                     <input type="hidden" @bind="@mood.MoodId">
-                                    <button class="btn btn-outline-secondary btn-sm rounded-pill @(selectedMood == mood.MoodName ? "active" : "")"
-                                            @onclick="() => SelectMood(mood.MoodName)">
+                                    <button class="btn btn-sm rounded-pill @GetMoodButtonClass(mood.MoodName)"
+                                            @onclick="() => ToggleMood(mood.MoodName)"
+                                            disabled="@(!CanEdit)">
+                                        @if (primaryMood == mood.MoodName)
+                                        {
+                                            <i class="bi bi-star-fill me-1"></i>
+                                        }
+                                        else if (secondaryMoods.Contains(mood.MoodName))
+                                        {
+                                            <i class="bi bi-plus-circle-fill me-1"></i>
+                                        }
                                         @mood.MoodName
                                     </button>
                                 }
@@ -95,8 +118,17 @@
                                 @foreach (var mood in neutralMoods)
                                 {
                                     <input type="hidden" @bind="@mood.MoodId">
-                                    <button class="btn btn-outline-secondary btn-sm rounded-pill @(selectedMood == mood.MoodName ? "active" : "")"
-                                            @onclick="() => SelectMood(mood.MoodName)">
+                                    <button class="btn btn-sm rounded-pill @GetMoodButtonClass(mood.MoodName)"
+                                            @onclick="() => ToggleMood(mood.MoodName)"
+                                            disabled="@(!CanEdit)">
+                                        @if (primaryMood == mood.MoodName)
+                                        {
+                                            <i class="bi bi-star-fill me-1"></i>
+                                        }
+                                        else if (secondaryMoods.Contains(mood.MoodName))
+                                        {
+                                            <i class="bi bi-plus-circle-fill me-1"></i>
+                                        }
                                         @mood.MoodName
                                     </button>
                                 }
@@ -115,8 +147,17 @@
                                 @foreach (var mood in negativeMoods)
                                 {
                                     <input type="hidden" @bind="@mood.MoodId">
-                                    <button class="btn btn-outline-secondary btn-sm rounded-pill @(selectedMood == mood.MoodName ? "active" : "")"
-                                            @onclick="() => SelectMood(mood.MoodName)">
+                                    <button class="btn btn-sm rounded-pill @GetMoodButtonClass(mood.MoodName)"
+                                            @onclick="() => ToggleMood(mood.MoodName)"
+                                            disabled="@(!CanEdit)">
+                                        @if (primaryMood == mood.MoodName)
+                                        {
+                                            <i class="bi bi-star-fill me-1"></i>
+                                        }
+                                        else if (secondaryMoods.Contains(mood.MoodName))
+                                        {
+                                            <i class="bi bi-plus-circle-fill me-1"></i>
+                                        }
                                         @mood.MoodName
                                     </button>
                                 }
@@ -124,7 +165,9 @@
                         </div>
 
                         <small class="text-muted">
-                            Click a mood to set as primary. Use the + button to add up to 2 secondary moods.
+                            <i class="bi bi-star-fill text-warning"></i> Primary mood | 
+                            <i class="bi bi-plus-circle-fill text-primary"></i> Secondary moods (up to 2) | 
+                            Click again to remove
                         </small>
                     </div>
 
@@ -133,7 +176,8 @@
                         <input type="text"
                                class="form-control form-control-lg border-0 px-0 @(ThemeService.IsDarkMode ? "bg-transparent text-light" : "")"
                                placeholder="Give your entry a title..."
-                               @bind="entryTitle" />
+                               @bind="entryTitle"
+                               disabled="@(!CanEdit)" />
                     </div>
 
 
@@ -152,8 +196,12 @@
                                    class="form-control @(ThemeService.IsDarkMode ? "bg-transparent text-light" : "")"
                                    placeholder="Add custom tag..."
                                    @bind="newTag"
-                                   @onkeypress="HandleTagKeyPress" />
-                            <button class="btn btn-primary" style="margin-left:20px" @onclick="AddTag">
+                                   @onkeypress="HandleTagKeyPress"
+                                   disabled="@(!CanEdit)" />
+                            <button class="btn btn-primary" 
+                                    style="margin-left:20px" 
+                                    @onclick="AddTag"
+                                    disabled="@(!CanEdit)">
                                 <i class="bi bi-plus-lg"></i> Add
                             </button>
                         </div>
@@ -165,7 +213,10 @@
                                 {
                                     <span class="badge bg-primary rounded-pill d-flex align-items-center gap-1 px-3 py-2">
                                         @tag
-                                        <i class="bi bi-x" @onclick="() => RemoveTag(tag)" style="cursor: pointer;"></i>
+                                        @if (CanEdit)
+                                        {
+                                            <i class="bi bi-x" @onclick="() => RemoveTag(tag)" style="cursor: pointer;"></i>
+                                        }
                                     </span>
                                 }
                             </div>
@@ -178,7 +229,8 @@
                                 {
                                     <input type="hidden" @bind="@tag.TagId">
                                     <button class="btn btn-outline-secondary btn-sm rounded-pill"
-                                            @onclick="() => AddPresetTag(tag.TagName)">
+                                            @onclick="() => AddPresetTag(tag.TagName)"
+                                            disabled="@(!CanEdit)">
                                         @tag.TagName
                                     </button>
                                 }
@@ -191,39 +243,26 @@
                     </div>
 
 
-                    <div class="d-flex justify-content-end mb-4">
-                        <button class="btn btn-primary px-4" @onclick="SaveEntry">
-                            <i class="bi bi-save me-2"></i> Save Entry
-                        </button>
+                    <div class="d-flex justify-content-between mb-4">
+                        @if (IsEditMode)
+                        {
+                            <button class="btn btn-outline-secondary px-4" @onclick="CancelEdit">
+                                <i class="bi bi-x-circle me-2"></i> Cancel
+                            </button>
+                        }
+                        else
+                        {
+                            <div></div>
+                        }
+                        
+                        @if (CanEdit)
+                        {
+                            <button class="btn btn-primary px-4" @onclick="SaveEntry">
+                                <i class="bi bi-save me-2"></i> @(IsEditMode ? "Update Entry" : "Save Entry")
+                            </button>
+                        }
                     </div>
-
                     
-                    <div class="border-top pt-4">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <i class="bi bi-lock"></i>
-                                    <span class="fw-medium">Lock Entry with Password</span>
-                                </div>
-                                <p class="text-muted small mb-0">
-                                    Protect this entry with a password to prevent unauthorized edits.
-                                </p>
-                                <small class="text-muted">
-                                    ⓘ Set an entry-first to enable password protection
-                                </small>
-                            </div>
-                            <div class="d-flex gap-2">
-                                <input type="password"
-                                       class="form-control form-control-sm @(ThemeService.IsDarkMode ? "bg-dark border-secondary" : "")"
-                                       placeholder="Set password"
-                                       style="width: 150px;"
-                                       @bind="entryPassword" />
-                                <button class="btn btn-outline-secondary btn-sm" @onclick="LockEntry">
-                                    Lock Entry
-                                </button>
-                            </div>
-                        </div>
-                    </div>
 
                 </div>
             </div>
@@ -232,11 +271,19 @@
 </div>
 
 @code {
+    [Parameter]
+    public Guid? JournalId { get; set; }
+
+    private bool IsEditMode => JournalId.HasValue;
+    private bool CanEdit => !IsEditMode || (IsEditMode && journalCreatedDate.Date == DateTime.Now.Date);
+    private DateTime journalCreatedDate = DateTime.Now;
+
     private string HtmlContent = "";
     private string entryTitle = "";
     private string entryContent = "";
     private TimeSpan? entryTime = TimeSpan.FromHours(DateTime.Now.Hour);
-    private string selectedMood = "";
+    private string primaryMood = "";
+    private List<string> secondaryMoods = new List<string>();
     private string newTag = "";
     private string entryPassword = "";
     private string moodId = "";
@@ -252,12 +299,65 @@
     private bool isDarkMode => ThemeService.IsDarkMode;
     private string currentModeClass => isDarkMode ? "dark-mode" : "light-mode";
 
-    protected async override void OnInitialized()
+    protected async override Task OnInitializedAsync()
     {
         ThemeService.OnChange += StateHasChanged;
         LoadTags();
         LoadMoods();
         await GetStreaks();
+
+        // Load journal if editing
+        if (IsEditMode && JournalId.HasValue)
+        {
+            await LoadJournalForEdit(JournalId.Value);
+        }
+    }
+
+    private async Task LoadJournalForEdit(Guid journalId)
+    {
+        var journal = await _journalService.GetJournalByIdAsync(journalId);
+        
+        if (journal != null)
+        {
+            journalCreatedDate = journal.CreatedAt;
+            entryTitle = journal.Title;
+            entryContent = journal.Description;
+
+            // Load primary mood
+            var allMoods = positiveMoods.Concat(neutralMoods).Concat(negativeMoods).ToList();
+            var primaryMoodObj = allMoods.FirstOrDefault(m => m.MoodId == journal.MoodId);
+            if (primaryMoodObj != null)
+            {
+                primaryMood = primaryMoodObj.MoodName;
+            }
+
+            // Load secondary moods
+            secondaryMoods.Clear();
+            if (journal.SecondaryMoodId1 != null)
+            {
+                var secondaryMood1 = allMoods.FirstOrDefault(m => m.MoodId == journal.SecondaryMoodId1);
+                if (secondaryMood1 != null)
+                {
+                    secondaryMoods.Add(secondaryMood1.MoodName);
+                }
+            }
+
+            if (journal.SecondaryMoodId2 != null)
+            {
+                var secondaryMood2 = allMoods.FirstOrDefault(m => m.MoodId == journal.SecondaryMoodId2);
+                if (secondaryMood2 != null)
+                {
+                    secondaryMoods.Add(secondaryMood2.MoodName);
+                }
+            }
+
+            // Load tags
+            selectedTags.Clear();
+            foreach (var jt in journal.JournalTags)
+            {
+                selectedTags.Add(jt.Tag.TagName);
+            }
+        }
     }
     
     private async Task GetStreaks()
@@ -272,9 +372,16 @@
         {
             await JS.InvokeVoidAsync("initQuill", "editor");
  
-            if (string.IsNullOrEmpty(entryContent))
+            // Load content into Quill if editing
+            if (!string.IsNullOrEmpty(entryContent))
             {
                 await JS.InvokeVoidAsync("setQuillHtml", entryContent);
+            }
+
+            // Disable Quill editor if cannot edit
+            if (!CanEdit)
+            {
+                await JS.InvokeVoidAsync("eval", "window.quill.enable(false);");
             }
         }
     }
@@ -284,7 +391,53 @@
         ThemeService.OnChange -= StateHasChanged;
     }
 
-    private void SelectMood(string mood) => selectedMood = mood;
+    private void ToggleMood(string mood)
+    {
+        if (!CanEdit) return;
+
+        // If clicking the primary mood, remove it
+        if (primaryMood == mood)
+        {
+            primaryMood = "";
+            return;
+        }
+
+        // If clicking a secondary mood, remove it
+        if (secondaryMoods.Contains(mood))
+        {
+            secondaryMoods.Remove(mood);
+            return;
+        }
+
+        // If no primary mood is set, set it as primary
+        if (string.IsNullOrEmpty(primaryMood))
+        {
+            primaryMood = mood;
+            return;
+        }
+
+        // If we have less than 2 secondary moods, add it as secondary
+        if (secondaryMoods.Count < 2)
+        {
+            secondaryMoods.Add(mood);
+        }
+    }
+
+    private string GetMoodButtonClass(string mood)
+    {
+        if (primaryMood == mood)
+        {
+            return "btn-primary"; // Primary mood - filled button
+        }
+        else if (secondaryMoods.Contains(mood))
+        {
+            return "btn-success"; // Secondary mood - success button
+        }
+        else
+        {
+            return "btn-outline-secondary"; // Unselected - outline button
+        }
+    }
 
     private void LoadTags()
     {
@@ -302,6 +455,8 @@
 
     private void AddTag()
     {
+        if (!CanEdit) return;
+
         if (!string.IsNullOrWhiteSpace(newTag) && !selectedTags.Contains(newTag))
         {
             selectedTags.Add(newTag);
@@ -311,10 +466,15 @@
 
     private void AddPresetTag(string tag)
     {
+        if (!CanEdit) return;
         if (!selectedTags.Contains(tag)) selectedTags.Add(tag);
     }
 
-    private void RemoveTag(string tag) => selectedTags.Remove(tag);
+    private void RemoveTag(string tag)
+    {
+        if (!CanEdit) return;
+        selectedTags.Remove(tag);
+    }
 
     private void HandleTagKeyPress(KeyboardEventArgs e)
     {
@@ -325,50 +485,112 @@
     {
     }
 
-    private async Task SaveEntry(){
-        
-        var mood = positiveMoods.Concat(neutralMoods).Concat(negativeMoods)
-            .FirstOrDefault(m => m.MoodName == selectedMood);
+    private void CancelEdit()
+    {
+        nav.NavigateTo("/");
+    }
 
-        if (mood == null)
+    private async Task SaveEntry()
+    {
+        if (!CanEdit)
         {
-            Console.WriteLine("No mood selected!");
             return;
         }
-        
-        Guid? tagId = null;
-        if (selectedTags.Count > 0)
+
+        // 1️⃣ Get all moods
+        var allMoods = positiveMoods.Concat(neutralMoods).Concat(negativeMoods).ToList();
+
+        // Get primary mood
+        var mood = allMoods.FirstOrDefault(m => m.MoodName == primaryMood);
+        if (mood == null)
         {
-            var tag = presetTags.FirstOrDefault(t => t.TagName == selectedTags[0]);
-            if (tag != null)
-                tagId = tag.TagId;
-            
+            Console.WriteLine("No primary mood selected!");
+            return;
         }
-        
-        if (string.IsNullOrEmpty(entryTitle))
+
+        // Get secondary moods
+        Guid? secondaryMoodId1 = null;
+        Guid? secondaryMoodId2 = null;
+
+        if (secondaryMoods.Count > 0)
+        {
+            var secondaryMood1 = allMoods.FirstOrDefault(m => m.MoodName == secondaryMoods[0]);
+            if (secondaryMood1 != null)
+            {
+                secondaryMoodId1 = secondaryMood1.MoodId;
+            }
+        }
+
+        if (secondaryMoods.Count > 1)
+        {
+            var secondaryMood2 = allMoods.FirstOrDefault(m => m.MoodName == secondaryMoods[1]);
+            if (secondaryMood2 != null)
+            {
+                secondaryMoodId2 = secondaryMood2.MoodId;
+            }
+        }
+
+        // 2️⃣ Validate title
+        if (string.IsNullOrWhiteSpace(entryTitle))
         {
             Console.WriteLine("Title should not be null");
-            throw new InvalidDataException();
+            return;
         }
-        
+
+        // 3️⃣ Get content from Quill editor
         entryContent = await JS.InvokeAsync<string>("getQuillHtml");
-        Journal journal = new Journal()
+
+        // 4️⃣ Prepare Journal object
+        var journal = new Journal
         {
-            JournalId = Guid.NewGuid(),
+            JournalId = IsEditMode ? JournalId.Value : Guid.NewGuid(),
             Title = entryTitle,
             Description = entryContent,
-            TagId= tagId.Value,
             MoodId = mood.MoodId,
-            CreatedAt = DateTime.Now
+            SecondaryMoodId1 = secondaryMoodId1.Value,
+            SecondaryMoodId2 = secondaryMoodId2.Value,
+            CreatedAt = IsEditMode ? journalCreatedDate : DateTime.Now,
+            JournalTags = new List<JournalTags>()
         };
-        await _journalService.AddJournalAsync(journal);
+
+        // 5️⃣ Process all selected tags
+        foreach (var tagName in selectedTags)
+        {
+            // Check if tag already exists
+            var tag = presetTags.FirstOrDefault(t => t.TagName.Equals(tagName, StringComparison.OrdinalIgnoreCase));
+
+            // If tag doesn't exist, create it
+            if (tag == null)
+            {
+                tag = tagsService.AddTag(tagName);
+                presetTags.Add(tag); // Add to preset list
+            }
+
+            // Create JournalTags link
+            var journalTag = new JournalTags
+            {
+                JournalId = journal.JournalId,
+                TagId = tag.TagId,
+                Tag = tag
+            };
+
+            journal.JournalTags.Add(journalTag);
+        }
+
+        // 6️⃣ Save or update journal
+        if (IsEditMode)
+        {
+            await _journalService.UpdateJournalAsync(journal);
+        }
+        else
+        {
+            await _journalService.AddJournalAsync(journal);
+        }
+
         nav.NavigateTo("/");
-       
     }
 
     private void LockEntry()
     {
     }
-    }
-
 }

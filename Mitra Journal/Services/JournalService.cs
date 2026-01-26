@@ -7,124 +7,147 @@ namespace Mitra_Journal.Services;
 
 public class JournalService : IJournalService
 {
-    private readonly LocalDbContext dbConfig;
- 
-    public JournalService(LocalDbContext dbConfig)
+    private readonly LocalDbContext _db;
+
+    public JournalService(LocalDbContext db)
     {
-        this.dbConfig = dbConfig;
+        _db = db;
     }
- 
-    // Get all journals including related Mood and Tags
-    public async Task<(int,List<Journal>)> GetAllJournalsAsync(int pageNo = 1, int pageSize = 3)
+
+public async Task<(int TotalCount, List<Journal> Journals)> GetAllJournalsAsync(int pageNo = 1, int pageSize = 3)
+{
+    var totalCount = await _db.Journals.CountAsync();
+
+    var journals = await _db.Journals
+        .Include(j => j.Mood)
+        .Include(j => j.JournalTags)
+            .ThenInclude(jt => jt.Tag)
+        .OrderByDescending(j => j.CreatedAt)
+        .Skip((pageNo - 1) * pageSize)
+        .Take(pageSize)
+        .ToListAsync();
+
+    return (totalCount, journals);
+}
+
+public async Task<Journal?> GetJournalByIdAsync(Guid id)
+{
+    return await _db.Journals
+        .Include(j => j.Mood)
+        .Include(j => j.JournalTags)
+            .ThenInclude(jt => jt.Tag)
+        .FirstOrDefaultAsync(j => j.JournalId == id);
+}
+
+public async Task AddJournalAsync(Journal journal)
+{
+    journal.JournalId = Guid.NewGuid();
+    journal.CreatedAt = DateTime.Now;
+
+    _db.Journals.Add(journal);
+
+    if (journal.JournalTags != null && journal.JournalTags.Any())
     {
-        var totalJournalCount = await dbConfig.Journals.CountAsync();
-        var paginatedJournals = await dbConfig.Journals
-            .Include(j => j.Mood)
-            .Include(j => j.Tags)
-            .OrderByDescending(j => j.CreatedAt)
-            .Skip((pageNo - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-        return (totalJournalCount, paginatedJournals);
-    }
- 
-    // Get a single journal by ID including related Mood and Tags
-    public async Task<Journal> GetJournalByIdAsync(Guid id)
-    {
-        return await dbConfig.Journals
-            .Include(j => j.Mood)
-            .Include(j => j.Tags)
-            .FirstOrDefaultAsync(j => j.JournalId == id);
-    }
- 
-    // Add a new journal
-    public async Task AddJournalAsync(Journal journal)
-    {
-        journal.JournalId = Guid.NewGuid();          // ensure ID
-        journal.CreatedAt = DateTime.Now;           // timestamp
-        dbConfig.Journals.Add(journal);
-        await dbConfig.SaveChangesAsync();
-    }
- 
-    // Update an existing journal
-    public async Task UpdateJournalAsync(Journal journal)
-    {
-        var existingJournal = await dbConfig.Journals.FindAsync(journal.JournalId);
-        if (existingJournal != null)
+        foreach (var jt in journal.JournalTags)
         {
-            existingJournal.Title = journal.Title;
-            existingJournal.Description = journal.Description;
-            existingJournal.Password = journal.Password;
-            existingJournal.MoodId = journal.MoodId;
-            existingJournal.TagId = journal.TagId;
- 
-            dbConfig.Journals.Update(existingJournal);
-            await dbConfig.SaveChangesAsync();
+            jt.JournalId = journal.JournalId;
         }
+        _db.JournalTags.AddRange(journal.JournalTags);
     }
- 
-    // Delete a journal by ID
-    public async Task DeleteJournalAsync(Guid id)
+
+    await _db.SaveChangesAsync();
+}
+
+public async Task UpdateJournalAsync(Journal journal)
+{
+    var existing = await _db.Journals
+        .Include(j => j.JournalTags)
+        .FirstOrDefaultAsync(j => j.JournalId == journal.JournalId);
+
+    if (existing == null) return;
+
+    existing.Title = journal.Title;
+    existing.Description = journal.Description;
+    existing.MoodId = journal.MoodId;
+
+    // Remove old tags
+    _db.JournalTags.RemoveRange(existing.JournalTags);
+
+    // Add updated tags
+    if (journal.JournalTags != null && journal.JournalTags.Any())
     {
-        var journal = await dbConfig.Journals.FindAsync(id);
-        if (journal != null)
+        foreach (var jt in journal.JournalTags)
         {
-            dbConfig.Journals.Remove(journal);
-            await dbConfig.SaveChangesAsync();
+            jt.JournalId = existing.JournalId;
         }
+        _db.JournalTags.AddRange(journal.JournalTags);
     }
-    public async Task<StreakResult> GetStreaksAsync()
+
+    await _db.SaveChangesAsync();
+}
+
+public async Task DeleteJournalAsync(Guid id)
+{
+    var journal = await _db.Journals
+        .Include(j => j.JournalTags)
+        .FirstOrDefaultAsync(j => j.JournalId == id);
+
+    if (journal == null) return;
+
+    _db.JournalTags.RemoveRange(journal.JournalTags);
+    _db.Journals.Remove(journal);
+
+    await _db.SaveChangesAsync();
+}
+
+public async Task<StreakResult> GetStreaksAsync()
+{
+    var totalEntries = await _db.Journals.CountAsync();
+
+    var dates = await _db.Journals
+        .Select(j => j.CreatedAt.Date)
+        .Distinct()
+        .OrderBy(d => d)
+        .ToListAsync();
+
+    if (!dates.Any())
     {
-        var totalEntries =  dbConfig.Journals.Count();
-        // Get all journal dates (distinct) in ascending order
-        var entries = await dbConfig.Journals
-            .Select(e => e.CreatedAt.Date)
-            .Distinct()
-            .OrderBy(d => d)
-            .ToListAsync();
-
-        if (!entries.Any())
-            return new StreakResult { CurrentStreak = 0, LongestStreak = 0 };
-        
-        int currentStreak = 0;
-        var today = DateTime.Today.Date;
-        var checkDate = today;
-        
-        var entrySet = entries.ToHashSet();
-
-        while (entrySet.Contains(checkDate))
-        {
-            currentStreak++;
-            checkDate = checkDate.AddDays(-1);
-        }
-        
-        int longestStreak = 0;
-        int tempStreak = 1;
-
-        for (int i = 1; i < entries.Count; i++)
-        {
-          
-            if ((entries[i] - entries[i - 1]).Days == 1)
-            {
-                tempStreak++;
-            }
-            else
-            {
-                tempStreak = 1;
-            }
-
-            if (tempStreak > longestStreak)
-                longestStreak = tempStreak;
-        }
-
-        if (longestStreak == 0)
-            longestStreak = 1;
-
         return new StreakResult
         {
-            TotalJournals =  totalEntries,
-            CurrentStreak = currentStreak,
-            LongestStreak = longestStreak
+            TotalJournals = 0,
+            CurrentStreak = 0,
+            LongestStreak = 0
         };
     }
+
+    int currentStreak = 0;
+    var today = DateTime.Today;
+    var dateSet = dates.ToHashSet();
+
+    var check = today;
+    while (dateSet.Contains(check))
+    {
+        currentStreak++;
+        check = check.AddDays(-1);
+    }
+
+    int longestStreak = 1;
+    int temp = 1;
+    for (int i = 1; i < dates.Count; i++)
+    {
+        if ((dates[i] - dates[i - 1]).Days == 1)
+            temp++;
+        else
+            temp = 1;
+
+        longestStreak = Math.Max(longestStreak, temp);
+    }
+
+    return new StreakResult
+    {
+        TotalJournals = totalEntries,
+        CurrentStreak = currentStreak,
+        LongestStreak = longestStreak
+    };
+}
 }
