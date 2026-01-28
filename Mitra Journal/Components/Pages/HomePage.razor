@@ -368,20 +368,27 @@
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            await JS.InvokeVoidAsync("initQuill", "editor");
- 
-            // Load content into Quill if editing
-            if (!string.IsNullOrEmpty(entryContent))
-            {
-                await JS.InvokeVoidAsync("setQuillHtml", entryContent);
-            }
+        if (!firstRender) return;
 
-            // Disable Quill editor if cannot edit
-            if (!CanEdit)
+        // Initialize Quill editor
+        await JS.InvokeVoidAsync("initQuill", "editor");
+
+        // Load content into Quill if editing or viewing past entries
+        if (!string.IsNullOrEmpty(entryContent))
+        {
+            await JS.InvokeVoidAsync("setQuillHtml", entryContent);
+        }
+
+        // If the user cannot edit (past entry), disable the editor safely
+        if (!CanEdit)
+        {
+            try
             {
-                await JS.InvokeVoidAsync("eval", "window.quill.enable(false);");
+                await JS.InvokeVoidAsync("eval", "if(window.quill){ window.quill.enable(false); }");
+            }
+            catch
+            {
+                // Ignore JS errors for past entries
             }
         }
     }
@@ -487,7 +494,7 @@
 
     private void CancelEdit()
     {
-        nav.NavigateTo("/");
+        nav.NavigateTo("/all-entries");
     }
 
     private async Task SaveEntry()
@@ -587,7 +594,7 @@
             await _journalService.AddJournalAsync(journal);
         }
 
-        nav.NavigateTo("/");
+        nav.NavigateTo("/all-entries");
     }
 
     private void LockEntry()

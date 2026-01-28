@@ -31,6 +31,7 @@ public static class MauiProgram
         builder.Services.AddScoped<IMoodService, MoodService>();
         builder.Services.AddScoped<ITagsService, TagsService>();
         builder.Services.AddSingleton<IJournalPdfService, JournalPdfService>();
+        builder.Services.AddSingleton<IPinService, PinService>();
 #endif
         var dbPath = Path.Combine(FileSystem.AppDataDirectory, "Mitra.db3");
         Console.WriteLine("DB path: " + dbPath);

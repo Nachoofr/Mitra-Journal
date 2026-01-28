@@ -1,0 +1,108 @@
+@page "/"
+@using Mitra_Journal.Services
+@using Mitra_Journal.Services.Interface
+@inject IPinService PinService
+@inject NavigationManager Navigation
+
+<div class="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full">
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+            </div>
+            <h3 class="text-2xl font-semibold text-gray-800">Create Your PIN</h3>
+            <p class="text-gray-600 mt-2">Set up a 4-digit PIN to secure your journal</p>
+        </div>
+
+        <form @onsubmit="SavePin" @onsubmit:preventDefault="true">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Enter PIN</label>
+                <input type="password" 
+                       inputmode="numeric"
+                       maxlength="4"
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-center text-2xl tracking-widest"
+                       placeholder="••••"
+                       @bind="pin" />
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Confirm PIN</label>
+                <input type="password" 
+                       inputmode="numeric"
+                       maxlength="4"
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-center text-2xl tracking-widest"
+                       placeholder="••••"
+                       @bind="confirmPin" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="text-red-600 text-sm flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                        @errorMessage
+                    </p>
+                </div>
+            }
+
+            <button type="submit" 
+                    class="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                Save PIN
+            </button>
+        </form>
+    </div>
+</div>
+
+@code{
+    private string pin = "";
+    private string confirmPin = "";
+    private string errorMessage = "";
+
+    protected override void OnInitialized()
+    {
+        if (PinService.HasPin())
+        {
+            Navigation.NavigateTo("/pin-login");
+        }
+    }
+
+    private void SavePin()
+    {
+        errorMessage = "";
+
+        // Validate PIN length
+        if (pin.Length != 4 || confirmPin.Length != 4)
+        {
+            errorMessage = "PIN must be exactly 4 digits.";
+            return;
+        }
+
+        // Validate PIN is numeric
+        if (!int.TryParse(pin, out int pinValue) || !int.TryParse(confirmPin, out int confirmPinValue))
+        {
+            errorMessage = "PIN must contain only numbers.";
+            return;
+        }
+
+        // Validate PIN range
+        if (pinValue < 1000 || pinValue > 9999)
+        {
+            errorMessage = "PIN must be exactly 4 digits.";
+            return;
+        }
+
+        // Check if PINs match
+        if (pin != confirmPin)
+        {
+            errorMessage = "PINs do not match.";
+            return;
+        }
+
+        PinService.AddPin(pinValue);
+        Navigation.NavigateTo("/pin-login");
+    }
+}
