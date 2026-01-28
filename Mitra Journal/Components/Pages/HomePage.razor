@@ -388,7 +388,6 @@
             }
             catch
             {
-                // Ignore JS errors for past entries
             }
         }
     }
@@ -434,15 +433,15 @@
     {
         if (primaryMood == mood)
         {
-            return "btn-primary"; // Primary mood - filled button
+            return "btn-primary"; 
         }
         else if (secondaryMoods.Contains(mood))
         {
-            return "btn-success"; // Secondary mood - success button
+            return "btn-success"; 
         }
         else
         {
-            return "btn-outline-secondary"; // Unselected - outline button
+            return "btn-outline-secondary"; 
         }
     }
 

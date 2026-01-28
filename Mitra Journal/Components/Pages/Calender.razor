@@ -1,10 +1,13 @@
 @page "/calendar"
+@using Mitra_Journal.Services
 @using Mitra_Journal.Services.Interface
 @using Mitra_Journal.Entities
 @inject IJournalService JournalService
 @inject NavigationManager Navigation
+@inject ThemeService ThemeService
+@implements IDisposable
 
-<div class="min-h-screen bg-gray-50 p-8">
+<div class="min-h-screen @(isDarkMode ? "bg-gray-900" : "bg-gray-50") p-8">
     <div class="max-w-6xl mx-auto">
         <!-- Header -->
         <div class="flex items-center gap-3 mb-8">
@@ -16,42 +19,42 @@
                     <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
             </div>
-            <h1 class="text-3xl font-semibold text-gray-800">Calendar</h1>
+            <h1 class="text-3xl font-semibold @(isDarkMode ? "text-gray-100" : "text-gray-800")">Calendar</h1>
         </div>
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-2 gap-6 mb-8">
-            <div class="bg-white rounded-2xl p-6 shadow-sm">
-                <div class="text-sm text-gray-500 mb-2">This Month</div>
-                <div class="text-3xl font-semibold text-gray-800">
-                    @entriesThisMonth <span class="text-lg text-gray-400">/ @daysInCurrentMonth</span>
+            <div class="@(isDarkMode ? "bg-gray-800" : "bg-white") rounded-2xl p-6 shadow-sm">
+                <div class="text-sm @(isDarkMode ? "text-gray-400" : "text-gray-500") mb-2">This Month</div>
+                <div class="text-3xl font-semibold @(isDarkMode ? "text-gray-100" : "text-gray-800")">
+                    @entriesThisMonth <span class="text-lg @(isDarkMode ? "text-gray-500" : "text-gray-400")">/ @daysInCurrentMonth</span>
                 </div>
             </div>
-            <div class="bg-white rounded-2xl p-6 shadow-sm">
-                <div class="text-sm text-gray-500 mb-2">Total Entries</div>
-                <div class="text-3xl font-semibold text-gray-800">@totalEntries</div>
+            <div class="@(isDarkMode ? "bg-gray-800" : "bg-white") rounded-2xl p-6 shadow-sm">
+                <div class="text-sm @(isDarkMode ? "text-gray-400" : "text-gray-500") mb-2">Total Entries</div>
+                <div class="text-3xl font-semibold @(isDarkMode ? "text-gray-100" : "text-gray-800")">@totalEntries</div>
             </div>
         </div>
 
         <!-- Calendar Card -->
-        <div class="bg-white rounded-2xl p-8 shadow-sm">
+        <div class="@(isDarkMode ? "bg-gray-800" : "bg-white") rounded-2xl p-8 shadow-sm">
             <!-- Calendar Header -->
             <div class="flex items-center justify-between mb-8">
                 <div>
-                    <h2 class="text-2xl font-semibold text-gray-800">@currentDate.ToString("MMMM")</h2>
-                    <div class="text-2xl font-semibold text-gray-800">@currentDate.Year</div>
+                    <h2 class="text-2xl font-semibold @(isDarkMode ? "text-gray-100" : "text-gray-800")">@currentDate.ToString("MMMM")</h2>
+                    <div class="text-2xl font-semibold @(isDarkMode ? "text-gray-100" : "text-gray-800")">@currentDate.Year</div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <button @onclick="GoToToday" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition">
+                    <button @onclick="GoToToday" class="px-4 py-2 text-sm @(isDarkMode ? "text-gray-300 hover:text-gray-100 hover:bg-gray-700" : "text-gray-600 hover:text-gray-800 hover:bg-gray-100") rounded-lg transition">
                         Today
                     </button>
-                    <button @onclick="PreviousMonth" class="p-2 hover:bg-gray-100 rounded-lg transition">
-                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button @onclick="PreviousMonth" class="p-2 @(isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-100") rounded-lg transition">
+                        <svg class="w-5 h-5 @(isDarkMode ? "text-gray-300" : "text-gray-600")" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <polyline points="15 18 9 12 15 6"></polyline>
                         </svg>
                     </button>
-                    <button @onclick="NextMonth" class="p-2 hover:bg-gray-100 rounded-lg transition">
-                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button @onclick="NextMonth" class="p-2 @(isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-100") rounded-lg transition">
+                        <svg class="w-5 h-5 @(isDarkMode ? "text-gray-300" : "text-gray-600")" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <polyline points="9 18 15 12 9 6"></polyline>
                         </svg>
                     </button>
@@ -62,7 +65,7 @@
             <div class="grid grid-cols-7 gap-4 mb-4">
                 @foreach (var day in dayNames)
                 {
-                    <div class="text-center text-xs font-medium text-gray-400 py-2">@day</div>
+                    <div class="text-center text-xs font-medium @(isDarkMode ? "text-gray-500" : "text-gray-400") py-2">@day</div>
                 }
             </div>
 
@@ -84,18 +87,18 @@
             </div>
 
             <!-- Legend -->
-            <div class="flex items-center gap-6 mt-8 pt-6 border-t border-gray-100">
+            <div class="flex items-center gap-6 mt-8 pt-6 border-t @(isDarkMode ? "border-gray-700" : "border-gray-100")">
                 <div class="flex items-center gap-2">
                     <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span class="text-sm text-gray-600">Positive</span>
+                    <span class="text-sm @(isDarkMode ? "text-gray-300" : "text-gray-600")">Positive</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-                    <span class="text-sm text-gray-600">Neutral</span>
+                    <span class="text-sm @(isDarkMode ? "text-gray-300" : "text-gray-600")">Neutral</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                    <span class="text-sm text-gray-600">Negative</span>
+                    <span class="text-sm @(isDarkMode ? "text-gray-300" : "text-gray-600")">Negative</span>
                 </div>
             </div>
         </div>
@@ -106,17 +109,17 @@
 @if (showModal && selectedDayJournals.Any())
 {
     <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" @onclick="CloseModal">
-        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden" @onclick:stopPropagation="true">
+        <div class="@(isDarkMode ? "bg-gray-800" : "bg-white") rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden" @onclick:stopPropagation="true">
             <!-- Modal Header -->
-            <div class="flex items-center justify-between p-6 border-b border-gray-100">
+            <div class="flex items-center justify-between p-6 border-b @(isDarkMode ? "border-gray-700" : "border-gray-100")">
                 <div>
-                    <h3 class="text-xl font-semibold text-gray-800">
+                    <h3 class="text-xl font-semibold @(isDarkMode ? "text-gray-100" : "text-gray-800")">
                         @selectedDate.ToString("MMMM dd, yyyy")
                     </h3>
-                    <p class="text-sm text-gray-500 mt-1">@selectedDayJournals.Count @(selectedDayJournals.Count == 1 ? "entry" : "entries")</p>
+                    <p class="text-sm @(isDarkMode ? "text-gray-400" : "text-gray-500") mt-1">@selectedDayJournals.Count @(selectedDayJournals.Count == 1 ? "entry" : "entries")</p>
                 </div>
-                <button @onclick="CloseModal" class="p-2 hover:bg-gray-100 rounded-lg transition">
-                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button @onclick="CloseModal" class="p-2 @(isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-100") rounded-lg transition">
+                    <svg class="w-5 h-5 @(isDarkMode ? "text-gray-300" : "text-gray-600")" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
@@ -127,11 +130,11 @@
             <div class="p-6 overflow-y-auto max-h-[calc(80vh-140px)]">
                 @foreach (var journal in selectedDayJournals)
                 {
-                    <div class="mb-4 p-4 border border-gray-200 rounded-xl hover:border-purple-300 transition">
+                    <div class="mb-4 p-4 border @(isDarkMode ? "border-gray-700 hover:border-purple-500" : "border-gray-200 hover:border-purple-300") rounded-xl transition">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex-1">
-                                <h4 class="font-semibold text-gray-800 mb-1">@journal.Title</h4>
-                                <p class="text-sm text-gray-600 line-clamp-2">@journal.Description</p>
+                                <h4 class="font-semibold @(isDarkMode ? "text-gray-100" : "text-gray-800") mb-1">@journal.Title</h4>
+                                <p class="text-sm @(isDarkMode ? "text-gray-300" : "text-gray-600") line-clamp-2">@journal.Description</p>
                             </div>
                             @if (journal.Mood != null)
                             {
@@ -146,13 +149,13 @@
                             <div class="flex flex-wrap gap-2 mb-3">
                                 @foreach (var jt in journal.JournalTags.Take(3))
                                 {
-                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md">
+                                    <span class="px-2 py-1 @(isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-600") text-xs rounded-md">
                                         @jt.Tag?.TagName
                                     </span>
                                 }
                                 @if (journal.JournalTags.Count > 3)
                                 {
-                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md">
+                                    <span class="px-2 py-1 @(isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-600") text-xs rounded-md">
                                         +@(journal.JournalTags.Count - 3) more
                                     </span>
                                 }
@@ -160,7 +163,7 @@
                         }
 
                         <div class="flex items-center justify-between">
-                            <span class="text-xs text-gray-400">
+                            <span class="text-xs @(isDarkMode ? "text-gray-500" : "text-gray-400")">
                                 @journal.CreatedAt.ToString("h:mm tt")
                             </span>
                             <button @onclick="() => ViewJournal(journal.JournalId)" 
@@ -190,25 +193,30 @@
     private DateTime selectedDate;
     private List<Journal> selectedDayJournals = new();
 
+    private bool isDarkMode => ThemeService.IsDarkMode;
+
     protected override async Task OnInitializedAsync()
     {
+        ThemeService.OnChange += StateHasChanged;
         await LoadDataAsync();
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnChange -= StateHasChanged;
     }
 
     private async Task LoadDataAsync()
     {
-        // Get all journals for the current month and adjacent months for calendar display
         var startDate = new DateTime(currentDate.Year, currentDate.Month, 1).AddMonths(-1);
         var endDate = new DateTime(currentDate.Year, currentDate.Month, 1).AddMonths(2);
 
         var allJournals = await GetJournalsForDateRangeAsync(startDate, endDate);
         
-        // Group journals by date
         journalsByDate = allJournals
             .GroupBy(j => j.CreatedAt.Date)
             .ToDictionary(g => g.Key, g => g.ToList());
 
-        // Calculate stats
         var streakResult = await JournalService.GetStreaksAsync();
         totalEntries = streakResult.TotalJournals;
         
@@ -232,7 +240,6 @@
         var lastDayOfMonth = new DateTime(currentDate.Year, currentDate.Month, daysInCurrentMonth);
         var startingDayOfWeek = (int)firstDayOfMonth.DayOfWeek;
         
-        // Previous month days
         var prevMonth = currentDate.AddMonths(-1);
         var daysInPrevMonth = DateTime.DaysInMonth(prevMonth.Year, prevMonth.Month);
         
@@ -242,7 +249,6 @@
             calendarDays.Add(CreateCalendarDay(date, false));
         }
         
-        // Current month days
         var today = DateTime.Today;
         for (int i = 1; i <= daysInCurrentMonth; i++)
         {
@@ -250,7 +256,6 @@
             calendarDays.Add(CreateCalendarDay(date, true, date == today));
         }
         
-        // Next month days
         var remainingDays = 42 - calendarDays.Count;
         var nextMonth = currentDate.AddMonths(1);
         for (int i = 1; i <= remainingDays; i++)
@@ -267,7 +272,6 @@
         
         if (hasEntry && journalsByDate[date].Any())
         {
-            // Get the most recent journal's mood for the day
             moodName = journalsByDate[date]
                 .OrderByDescending(j => j.CreatedAt)
                 .FirstOrDefault()?.Mood?.MoodName;
@@ -290,25 +294,25 @@
         
         if (!day.IsCurrentMonth)
         {
-            classes.Add("text-gray-300");
+            classes.Add(isDarkMode ? "text-gray-600" : "text-gray-300");
         }
         else
         {
-            classes.Add("text-gray-700 font-medium");
+            classes.Add(isDarkMode ? "text-gray-200 font-medium" : "text-gray-700 font-medium");
         }
         
         if (day.IsToday)
         {
-            classes.Add("bg-gray-200");
+            classes.Add(isDarkMode ? "bg-gray-700" : "bg-gray-200");
         }
 
         if (day.HasEntry)
         {
-            classes.Add("hover:bg-purple-50");
+            classes.Add(isDarkMode ? "hover:bg-purple-900/30" : "hover:bg-purple-50");
         }
         else
         {
-            classes.Add("hover:bg-gray-50");
+            classes.Add(isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-50");
         }
         
         return string.Join(" ", classes);
