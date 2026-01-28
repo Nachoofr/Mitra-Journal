@@ -144,7 +144,7 @@
                                 <!-- Secondary Mood 1 -->
                                 @if (journal.SecondaryMoodId1 != null)
                                 {
-                                    var secondaryMood1 = GetMoodById(journal.SecondaryMoodId1);
+                                    var secondaryMood1 = GetMoodById(journal.SecondaryMoodId1.Value);
                                     if (secondaryMood1 != null)
                                     {
                                         <span class="badge bg-success me-2">
@@ -157,7 +157,7 @@
                                 <!-- Secondary Mood 2 -->
                                 @if (journal.SecondaryMoodId2 != null)
                                 {
-                                    var secondaryMood2 = GetMoodById(journal.SecondaryMoodId2);
+                                    var secondaryMood2 = GetMoodById(journal.SecondaryMoodId2.Value);
                                     if (secondaryMood2 != null)
                                     {
                                         <span class="badge bg-success me-2">

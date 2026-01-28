@@ -503,19 +503,16 @@
         {
             return;
         }
-
-        // 1️⃣ Get all moods
+        
         var allMoods = positiveMoods.Concat(neutralMoods).Concat(negativeMoods).ToList();
-
-        // Get primary mood
+        
         var mood = allMoods.FirstOrDefault(m => m.MoodName == primaryMood);
         if (mood == null)
         {
             Console.WriteLine("No primary mood selected!");
             return;
         }
-
-        // Get secondary moods
+        
         Guid? secondaryMoodId1 = null;
         Guid? secondaryMoodId2 = null;
 
@@ -536,44 +533,37 @@
                 secondaryMoodId2 = secondaryMood2.MoodId;
             }
         }
-
-        // 2️⃣ Validate title
+        
         if (string.IsNullOrWhiteSpace(entryTitle))
         {
             Console.WriteLine("Title should not be null");
             return;
         }
-
-        // 3️⃣ Get content from Quill editor
+        
         entryContent = await JS.InvokeAsync<string>("getQuillHtml");
-
-        // 4️⃣ Prepare Journal object
+        
         var journal = new Journal
         {
             JournalId = IsEditMode ? JournalId.Value : Guid.NewGuid(),
             Title = entryTitle,
             Description = entryContent,
             MoodId = mood.MoodId,
-            SecondaryMoodId1 = secondaryMoodId1.Value,
-            SecondaryMoodId2 = secondaryMoodId2.Value,
+            SecondaryMoodId1 = secondaryMoodId1,
+            SecondaryMoodId2 = secondaryMoodId2,
             CreatedAt = IsEditMode ? journalCreatedDate : DateTime.Now,
             JournalTags = new List<JournalTags>()
         };
-
-        // 5️⃣ Process all selected tags
+        
         foreach (var tagName in selectedTags)
         {
-            // Check if tag already exists
             var tag = presetTags.FirstOrDefault(t => t.TagName.Equals(tagName, StringComparison.OrdinalIgnoreCase));
-
-            // If tag doesn't exist, create it
+            
             if (tag == null)
             {
                 tag = tagsService.AddTag(tagName);
-                presetTags.Add(tag); // Add to preset list
+                presetTags.Add(tag);
             }
-
-            // Create JournalTags link
+            
             var journalTag = new JournalTags
             {
                 JournalId = journal.JournalId,
@@ -583,8 +573,7 @@
 
             journal.JournalTags.Add(journalTag);
         }
-
-        // 6️⃣ Save or update journal
+        
         if (IsEditMode)
         {
             await _journalService.UpdateJournalAsync(journal);
