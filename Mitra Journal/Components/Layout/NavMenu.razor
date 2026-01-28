@@ -8,25 +8,23 @@
     nav a {
         text-decoration: none !important;
     }
-
-    nav a:hover {
-        text-decoration: none !important;
-    }
 </style>
 
-<nav class="flex flex-col gap-1 w-full p-2">
+<nav class="flex flex-col gap-2 w-full p-3">
     <!-- Home -->
     <NavLink
         href="/home"
         Match="NavLinkMatch.Prefix"
-        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 no-underline"
+        class="flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-200"
         ActiveClass="@(ThemeService.IsDarkMode
                          ? "text-indigo-400 bg-indigo-500/10 font-medium"
                          : "text-indigo-600 bg-indigo-50 font-medium")"
         InactiveClass="@(ThemeService.IsDarkMode
                            ? "text-gray-400 hover:bg-white/5 hover:text-gray-300"
                            : "text-gray-700 hover:bg-gray-50")">
-        <i class="bi bi-house-door text-xl"></i>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
         <span class="text-base">Home</span>
     </NavLink>
 
@@ -34,14 +32,16 @@
     <NavLink
         href="/all-entries"
         Match="NavLinkMatch.All"
-        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 no-underline"
+        class="flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-200"
         ActiveClass="@(ThemeService.IsDarkMode
                          ? "text-indigo-400 bg-indigo-500/10 font-medium"
                          : "text-indigo-600 bg-indigo-50 font-medium")"
         InactiveClass="@(ThemeService.IsDarkMode
                            ? "text-gray-400 hover:bg-white/5 hover:text-gray-300"
                            : "text-gray-700 hover:bg-gray-50")">
-        <i class="bi bi-list-ul text-xl"></i>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
         <span class="text-base">All Entries</span>
     </NavLink>
 
@@ -49,14 +49,16 @@
     <NavLink
         href="/dashboard"
         Match="NavLinkMatch.Prefix"
-        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 no-underline"
+        class="flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-200"
         ActiveClass="@(ThemeService.IsDarkMode
                          ? "text-indigo-400 bg-indigo-500/10 font-medium"
                          : "text-indigo-600 bg-indigo-50 font-medium")"
         InactiveClass="@(ThemeService.IsDarkMode
                            ? "text-gray-400 hover:bg-white/5 hover:text-gray-300"
                            : "text-gray-700 hover:bg-gray-50")">
-        <i class="bi bi-grid-3x3-gap text-xl"></i>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z"/>
+        </svg>
         <span class="text-base">Dashboard</span>
     </NavLink>
 
@@ -64,14 +66,16 @@
     <NavLink
         href="/calendar"
         Match="NavLinkMatch.Prefix"
-        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 no-underline"
+        class="flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-200"
         ActiveClass="@(ThemeService.IsDarkMode
                          ? "text-indigo-400 bg-indigo-500/10 font-medium"
                          : "text-indigo-600 bg-indigo-50 font-medium")"
         InactiveClass="@(ThemeService.IsDarkMode
                            ? "text-gray-400 hover:bg-white/5 hover:text-gray-300"
                            : "text-gray-700 hover:bg-gray-50")">
-        <i class="bi bi-calendar3 text-xl"></i>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
         <span class="text-base">Calendar</span>
     </NavLink>
 
@@ -79,14 +83,16 @@
     <NavLink
         href="/export"
         Match="NavLinkMatch.Prefix"
-        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 no-underline"
+        class="flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-200"
         ActiveClass="@(ThemeService.IsDarkMode
                          ? "text-indigo-400 bg-indigo-500/10 font-medium"
                          : "text-indigo-600 bg-indigo-50 font-medium")"
         InactiveClass="@(ThemeService.IsDarkMode
                            ? "text-gray-400 hover:bg-white/5 hover:text-gray-300"
                            : "text-gray-700 hover:bg-gray-50")">
-        <i class="bi bi-file-earmark-pdf text-xl"></i>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+        </svg>
         <span class="text-base">Export PDF</span>
     </NavLink>
 </nav>
@@ -103,5 +109,4 @@
     {
         ThemeService.OnChange -= StateHasChanged;
     }
-
 }
